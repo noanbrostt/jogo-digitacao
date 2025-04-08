@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Jogo de Digitação</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                margin: 0;
+                background-color: #f4f4f4;
+            }
+
+            #menu,
+            #game {
+                text-align: center;
+                background: #fff;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+
+            #menu button,
+            #game button {
+                padding: 10px;
+                margin: 5px;
+                font-size: 18px;
+                border-radius: 4px;
+                border: 1px solid #ddd;
+                cursor: pointer;
+            }
+
+            input {
+                padding: 10px;
+                font-size: 18px;
+                margin: 5px;
+                border-radius: 4px;
+                border: 1px solid #ddd;
+            }
+
+            #score,
+            #timer,
+            #highscore {
+                margin-top: 10px;
+                font-size: 20px;
+                font-weight: bold;
+            }
+
+            #word {
+                font-size: 48px;
+                font-weight: bold;
+                color: #ff5733;
+                margin: 20px 0;
+            }
+
+            .hidden {
+                display: none;
+            }
+
+            @keyframes shake {
+                0%,
+                100% {
+                    transform: translateX(0);
+                }
+                20%,
+                60% {
+                    transform: translateX(-5px);
+                }
+                40%,
+                80% {
+                    transform: translateX(5px);
+                }
+            }
+
+            .input-error {
+                animation: shake 0.2s ease;
+                border-color: red;
+                background-color: #ffdddd;
+            }
+
+            input:focus {
+                outline: none;
+            }
+
+            @keyframes correct {
+                0% {
+                    background-color: #ddffdd;
+                }
+                100% {
+                    background-color: white;
+                }
+            }
+
+            .input-correct {
+                animation: correct 0.2s ease;
+                border-color: green;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Menu Inicial -->
+        <div id="menu">
+            <h2>Jogo de Digitação</h2>
+            <button onclick="startGame(1)" id="btnFase1">Fase 1</button>
+            <button onclick="startGame(2)" id="btnFase2" disabled>
+                Fase 2
+            </button>
+            <button onclick="startGame(3)" id="btnFase3" disabled>
+                Fase 3
+            </button>
+            <button onclick="startGame(4)" id="btnFase4" disabled>
+                Fase 4
+            </button>
+            <button onclick="showRanking()">Ranking</button>
+            <button
+                onclick="resetarProgresso()"
+                style="background-color: #f44336; color: white"
+            >
+                Resetar Progresso
+            </button>
+        </div>
+
+        <!-- Fase 1 -->
+        <div id="game" class="hidden">
+            <h3 id="message">Aperte Enter para começar</h3>
+            <p id="word" class="hidden">Letra</p>
+            <input
+                type="text"
+                id="input"
+                placeholder="Digite..."
+                autocomplete="off"
+                class="hidden"
+            />
+            <p id="score" class="hidden">Pontuação: 0</p>
+            <p id="timer" class="hidden">Tempo: 20.0s</p>
+            <button id="backButton" onclick="returnToMenu()">Voltar</button>
+        </div>
+
+        <script>
+            const fases = {
+                1: {
+                    letras: [
+                        "a",
+                        "s",
+                        "d",
+                        "f",
+                        "ç",
+                        "l",
+                        "k",
+                        "j",
+                        "a",
+                        "s",
+                        "d",
+                        "f",
+                        "ç",
+                        "l",
+                        "k",
+                        "j",
+                        "a",
+                        "s",
+                        "d",
+                        "f",
+                        "ç",
+                        "l",
+                        "k",
+                        "j",
+                    ],
+                    pontos: 50,
+                    tempo: 15.0,
+                },
+                2: {
+                    letras: [
+                        "a",
+                        "ç",
+                        "s",
+                        "l",
+                        "e",
+                        "i",
+                        "v",
+                        "n",
+                        "g",
+                        "h",
+                        "a",
+                        "ç",
+                        "s",
+                        "l",
+                        "e",
+                        "i",
+                        "v",
+                        "n",
+                        "g",
+                        "h",
+                    ],
+                    pontos: 100,
+                    tempo: 20.0,
+                },
+                3: {
+                    letras: [
+                        "linha",
+                        "dados",
+                        "chat",
+                        "conta",
+                        "cliente",
+                        "setor",
+                        "turno",
+                        "contato",
+                        "rapido",
+                        "ativo",
+                        "pausa",
+                        "ligar",
+                        "foco",
+                        "paco",
+                    ],
+                    pontos: 150,
+                    tempo: 25.0,
+                },
+                4: {
+                    letras: [
+                        "Retorno ao cliente a cada cinquenta segundos",
+                        "Atender sempre com empatia",
+                        "Lembre de usar a fraseologia correta",
+                        "Perguntar se pode ajudar em algo mais",
+                        "Acompanhar o cliente até o final do atendimento",
+                        "Agradecer o cliente pelo contato",
+                        "Retorno ao cliente a cada cinquenta segundos",
+                        "Atender sempre com empatia",
+                        "Lembre de usar a fraseologia correta",
+                        "Perguntar se pode ajudar em algo mais",
+                        "Acompanhar o cliente até o final do atendimento",
+                        "Agradecer o cliente pelo contato",
+                    ],
+                    pontos: 0, // não tem pontuação fixa
+                    tempo: 30.0,
+                },
+            };
+
+            let currentLetter = "";
+            let score = 0;
+            let letterIndex = 0;
+            let timerInterval;
+            let readyToStart = false;
+            let hasMistakeInPhrase = false;
+
+            const menu = document.getElementById("menu");
+            const game = document.getElementById("game");
+            const message = document.getElementById("message");
+            const backButton = document.getElementById("backButton");
+            const wordElement = document.getElementById("word");
+            const inputElement = document.getElementById("input");
+            const scoreElement = document.getElementById("score");
+            const timerElement = document.getElementById("timer");
+
+            function returnToMenu() {
+                clearInterval(timerInterval);
+                readyToStart = false;
+                game.classList.add("hidden");
+                menu.classList.remove("hidden");
+            }
+
+            function startGame(fase) {
+                currentFase = fase;
+                letterIndex = 0;
+
+                menu.classList.add("hidden");
+                game.classList.remove("hidden");
+                wordElement.classList.add("hidden");
+                inputElement.classList.add("hidden");
+
+                const savedProgress =
+                    JSON.parse(localStorage.getItem("progresso")) || {};
+                const pontuacaoAtual = savedProgress[fase] || 0;
+
+                scoreElement.textContent = "Pontuação: " + pontuacaoAtual;
+                scoreElement.classList.remove("hidden");
+                timerElement.classList.add("hidden");
+                backButton.classList.remove("hidden");
+                message.classList.remove("hidden");
+                readyToStart = true;
+            }
+
+            function initializeGame() {
+                const faseAtual = fases[currentFase];
+                score = 0;
+                time = faseAtual.tempo;
+                updateScore();
+                letters = [...faseAtual.letras];
+                currentIndex = 0;
+                newLetter();
+                clearInterval(timerInterval);
+                timerInterval = setInterval(updateTimer, 100);
+                wordElement.classList.remove("hidden");
+                inputElement.classList.remove("hidden");
+                if (currentFase !== 4) {
+                    scoreElement.classList.add("hidden");
+                }
+                timerElement.classList.remove("hidden");
+                message.classList.add("hidden");
+                backButton.classList.add("hidden");
+                inputElement.focus();
+            }
+
+            function updateScore() {
+                scoreElement.textContent = "Pontuação: " + score;
+            }
+
+            function updateTimer() {
+                if (time > 0) {
+                    time -= 0.1;
+                    timerElement.textContent =
+                        "Tempo: " + time.toFixed(1) + "s";
+                } else {
+                    clearInterval(timerInterval);
+                    endGame();
+                }
+            }
+
+            function newLetter() {
+                inputElement.dataset.lastLength = 0;
+
+                if (currentIndex >= letters.length) {
+                    endGame();
+                    return;
+                }
+                currentLetter = letters[currentIndex];
+                currentIndex++;
+                wordElement.textContent = currentLetter;
+                inputElement.value = "";
+            }
+
+            function endGame() {
+                const faseAtual = fases[currentFase];
+                let finalScore;
+
+                if (currentFase === 4) {
+                    finalScore = score;
+                } else {
+                    finalScore =
+                        score >= faseAtual.letras.length ? faseAtual.pontos : 0;
+                }
+
+                alert(
+                    finalScore > 0
+                        ? "Parabéns! Você completou a fase!"
+                        : "Tempo esgotado!"
+                );
+
+                // Atualiza o progresso apenas se a pontuação for maior que a anterior
+                console.log(
+                    `Pontuação atual: ${progresso[currentFase]}, Nova pontuação: ${finalScore}`
+                );
+                if (finalScore > progresso[currentFase]) {
+                    progresso[currentFase] = finalScore;
+                    salvarProgresso(currentFase, finalScore);
+                }
+
+                // Desbloquear próxima fase se não for a última
+                if (finalScore > 0) {
+                    if (currentFase === 1)
+                        document.getElementById("btnFase2").disabled = false;
+                    if (currentFase === 2)
+                        document.getElementById("btnFase3").disabled = false;
+                    if (currentFase === 3)
+                        document.getElementById("btnFase4").disabled = false;
+                }
+
+                returnToMenu();
+            }
+
+            inputElement.addEventListener("beforeinput", (event) => {
+                const newChar = event.data;
+                const currentInput = inputElement.value;
+
+                // Se for apagar ou algo que não envolva texto, libera
+                if (
+                    event.inputType.startsWith("delete") ||
+                    event.inputType === "insertLineBreak"
+                )
+                    return;
+
+                const proposedValue = currentInput + newChar;
+
+                if (
+                    currentFase === 4 &&
+                    currentLetter.startsWith(proposedValue)
+                ) {
+                    // Somar 3 pontos para cada letra certa digitada (sem repetir caso digite a mesma letra de novo)
+                    const letrasDigitadasCertas = proposedValue.length;
+                    const letrasCertasAnteriores =
+                        inputElement.dataset.lastLength || 0;
+                    const novasLetrasCertas =
+                        letrasDigitadasCertas - letrasCertasAnteriores;
+
+                    if (novasLetrasCertas > 0) {
+                        score += novasLetrasCertas * 3;
+                        updateScore();
+                        inputElement.dataset.lastLength = letrasDigitadasCertas;
+                    }
+                }
+
+                if (currentLetter.startsWith(proposedValue)) {
+                    // Se acertou a palavra inteira
+                    if (proposedValue === currentLetter) {
+                        if (currentFase === 4) {
+                            const bonus = hasMistakeInPhrase
+                                ? currentLetter.length * 2
+                                : currentLetter.length * 4;
+                            score += bonus;
+                            hasMistakeInPhrase = false;
+                        } else {
+                            score++;
+                        }
+                        updateScore();
+
+                        inputElement.classList.add("input-correct");
+                        setTimeout(() => {
+                            inputElement.classList.remove("input-correct");
+                        }, 200);
+                        setTimeout(() => {
+                            inputElement.value = ""; // limpa o input após acerto
+                        }, 2);
+                        newLetter();
+                    }
+
+                } else {
+                    event.preventDefault(); // bloqueia a digitação da letra errada
+                    hasMistakeInPhrase = true;
+                    inputElement.classList.add("input-error");
+                    setTimeout(() => {
+                        inputElement.classList.remove("input-error");
+                    }, 200);
+                }
+            });
+
+            document.addEventListener("keydown", (event) => {
+                if (readyToStart && event.key === "Enter") {
+                    readyToStart = false;
+                    initializeGame();
+                }
+            });
+
+            const progressoSalvo =
+                JSON.parse(localStorage.getItem("progresso")) || {};
+            const progresso = {
+                1: progressoSalvo[1] || 0,
+                2: progressoSalvo[2] || 0,
+                3: progressoSalvo[3] || 0,
+                4: progressoSalvo[4] || 0,
+            };
+
+            function salvarProgresso(fase, pontuacao) {
+                console.log(`Salvando progresso da fase ${fase}: ${pontuacao}`);
+                progresso[fase] = Math.max(progresso[fase] || 0, pontuacao);
+                console.log(progresso);
+                console.log(JSON.stringify(progresso));
+
+                localStorage.setItem("progresso", JSON.stringify(progresso));
+            }
+
+            function verificarProgressoSalvo() {
+                const progressoSalvo =
+                    JSON.parse(localStorage.getItem("progresso")) || {};
+
+                if (progressoSalvo[1] > 0) {
+                    document.getElementById("btnFase2").disabled = false;
+                }
+                if (progressoSalvo[2] > 0) {
+                    document.getElementById("btnFase3").disabled = false;
+                }
+                if (progressoSalvo[3] > 0) {
+                    document.getElementById("btnFase4").disabled = false;
+                }
+            }
+
+            verificarProgressoSalvo();
+
+            function showRanking() {
+                alert("Ranking ainda não implementado.");
+            }
+
+            function resetarProgresso() {
+                if (
+                    confirm("Tem certeza que deseja apagar todo o progresso?")
+                ) {
+                    localStorage.removeItem("progresso");
+                    location.reload();
+                }
+            }
+        </script>
+    </body>
+</html>

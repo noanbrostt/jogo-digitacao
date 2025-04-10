@@ -1,0 +1,214 @@
+<style>
+    body {
+        background: #f0f0f0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        font-family: sans-serif;
+    }
+
+    .hands {
+        display: flex;
+        width: 230%;
+        padding-inline: 40px;
+        justify-content: space-between;
+    }
+
+    .hand {
+        width: 150px;
+        height: 180px;
+        position: relative;
+    }
+
+    .left-palm {
+        background: #ffcc99;
+        width: 100px;
+        height: 100px;
+        border-radius: 50% 50% 40% 40%;
+        position: absolute;
+        bottom: 0;
+        left: 20px;
+        z-index: 1;
+    }
+
+    .right-palm {
+        background: #ffcc99;
+        width: 100px;
+        height: 100px;
+        border-radius: 50% 50% 40% 40%;
+        position: absolute;
+        bottom: 0;
+        right: 20px;
+        z-index: 1;
+    }
+
+    .finger {
+        width: 20px;
+        height: 80px;
+        background: #ffcc99;
+        border-radius: 15px;
+        position: absolute;
+        transition: 0.3s;
+        z-index: 2;
+    }
+
+    .highlight {
+        background: #ff6961 !important;
+        box-shadow: 0 0 10px #ff6961;
+        transform: scale(1.1);
+    }
+
+    /* Dedos da mão esquerda */
+    #left-pinky {
+        top: 45px;
+        left: 1px;
+        transform: rotate(-10deg);
+        transform-origin: top right;
+        height: 60px;
+        width: 19px;
+    }
+    #left-ring {
+        top: 2px;
+        left: 22px;
+        transform: rotate(-6deg);
+        transform-origin: top right;
+        height: 80px;
+    }
+    #left-middle {
+        top: -16px;
+        left: 49px;
+        transform: rotate(-3deg);
+        transform-origin: top right;
+        height: 90px;
+    }
+    #left-index {
+        top: -6px;
+        left: 78px;
+        height: 82px;
+    }
+    #left-thumb {
+        top: 55px;
+        left: 131px;
+        transform: rotate(6deg);
+        transform-origin: top right;
+        width: 22px;
+    }
+
+    /* Dedos da mão direita */
+    #right-pinky {
+        top: 45px;
+        right: 1px;
+        transform: rotate(10deg);
+        transform-origin: top left;
+        height: 60px;
+        width: 19px;
+    }
+    #right-ring {
+        top: 2px;
+        right: 22px;
+        transform: rotate(6deg);
+        transform-origin: top left;
+        height: 80px;
+    }
+    #right-middle {
+        top: -16px;
+        right: 49px;
+        transform: rotate(3deg);
+        transform-origin: top left;
+        height: 90px;
+    }
+    #right-index {
+        top: -6px;
+        right: 78px;
+        height: 82px;
+    }
+    #right-thumb {
+        top: 55px;
+        right: 131px;
+        transform: rotate(-6deg);
+        transform-origin: top left;
+        width: 22px;
+    }
+</style>
+</head>
+<body>
+<div class="hands">
+    <div class="hand left-hand">
+        <div
+            class="finger"
+            id="left-pinky"
+            data-name="mindinhoEsq"
+        ></div>
+        <div class="finger" id="left-ring" data-name="anelarEsq"></div>
+        <div class="finger" id="left-middle" data-name="medioEsq"></div>
+        <div
+            class="finger"
+            id="left-index"
+            data-name="indicadorEsq"
+        ></div>
+        <div
+            class="finger"
+            id="left-thumb"
+            data-name="polegarEsq"
+        ></div>
+        <div class="left-palm"></div>
+    </div>
+
+    <div class="hand right-hand">
+        <div
+            class="finger"
+            id="right-pinky"
+            data-name="mindinhoDir"
+        ></div>
+        <div class="finger" id="right-ring" data-name="anelarDir"></div>
+        <div
+            class="finger"
+            id="right-middle"
+            data-name="medioDir"
+        ></div>
+        <div
+            class="finger"
+            id="right-index"
+            data-name="indicadorDir"
+        ></div>
+        <div
+            class="finger"
+            id="right-thumb"
+            data-name="polegarDir"
+        ></div>
+        <div class="right-palm"></div>
+    </div>
+</div>
+
+<script>
+    function highlightFinger(fingerName) {
+        document
+            .querySelectorAll(".finger")
+            .forEach((f) => f.classList.remove("highlight"));
+
+        const nameToId = {
+            mindinhoEsq: "left-pinky",
+            anelarEsq: "left-ring",
+            medioEsq: "left-middle",
+            indicadorEsq: "left-index",
+            polegarEsq: "left-thumb",
+            polegarDir: "right-thumb",
+            indicadorDir: "right-index",
+            medioDir: "right-middle",
+            anelarDir: "right-ring",
+            mindinhoDir: "right-pinky",
+        };
+
+        const id = nameToId[fingerName];
+        const el = document.getElementById(id);
+        if (el) {
+            el.classList.add("highlight");
+        } else {
+            console.warn("Nome de dedo inválido:", fingerName);
+        }
+    }
+
+    // Exemplo de uso
+    // setTimeout(() => highlightFinger("indicadorEsq"), 1000);
+</script>

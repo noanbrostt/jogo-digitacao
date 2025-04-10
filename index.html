@@ -101,9 +101,15 @@
                 animation: correct 0.2s ease;
                 border-color: green;
             }
+
+            #dedos {
+                position: absolute;
+                margin-top: -160px;
+                margin-left: -361px;
+            }
         </style>
     </head>
-    <body onload="loadKeyboard()">
+    <body onload="loadKeyboard(); loadFingers();">
         <!-- Menu Inicial -->
         <div id="menu">
             <h2>Jogo de Digitação</h2>
@@ -139,6 +145,8 @@
             <p id="score" class="hidden">Pontuação: 0</p>
             <p id="timer" class="hidden">Tempo: 20.0s</p>
             <button id="backButton" onclick="returnToMenu()">Voltar</button>
+
+            <div id="dedos"></div>
         </div>
 
         <div id="teclado"></div>
@@ -280,6 +288,32 @@
                     })
                     .catch((err) => {
                         console.error("Erro ao carregar o teclado:", err);
+                    });
+            }
+
+            function loadFingers() {
+                fetch("dedos.html")
+                    .then((response) => response.text())
+                    .then((html) => {
+                        const container = document.querySelector("#dedos");
+                        container.innerHTML = html;
+
+                        // Executa os scripts dentro do HTML carregado
+                        container
+                            .querySelectorAll("script")
+                            .forEach((script) => {
+                                const newScript =
+                                    document.createElement("script");
+                                if (script.src) {
+                                    newScript.src = script.src;
+                                } else {
+                                    newScript.textContent = script.textContent;
+                                }
+                                document.body.appendChild(newScript);
+                            });
+                    })
+                    .catch((err) => {
+                        console.error("Erro ao carregar os dedos:", err);
                     });
             }
 

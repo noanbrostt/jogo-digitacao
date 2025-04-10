@@ -1,0 +1,236 @@
+<style>
+    .keyboard {
+        background: #111;
+        padding: 20px;
+        border-radius: 10px;
+        display: inline-block;
+    }
+
+    .row {
+        display: flex;
+        margin-bottom: 6px;
+    }
+
+    .key {
+        background: #333;
+        color: #fff;
+        padding: 12px;
+        margin: 2px;
+        border-radius: 5px;
+        text-align: center;
+        width: 32px;
+        height: 32px;
+        box-shadow: 0 2px 0 #000;
+        font-size: 14px;
+        user-select: none;
+        transition: 200ms;
+    }
+
+    .key.active {
+        background-color: #00ff88;
+        color: black;
+        box-shadow: 0 0 10px #00ff88 !important;
+    }
+
+    .key.blank {
+        background: none;
+        box-shadow: none;
+    }
+
+    .key.small {
+        height: 20px;
+    }
+
+    .key.blank.small {
+        width: 0px;
+    }
+
+    .key.backspace {
+        width: 88px;
+    }
+
+    .key.tab {
+        width: 60px;
+    }
+
+    .key.caps {
+        width: 70px;
+    }
+
+    .key.enterUpper {
+        z-index: 2;
+        width: 61px;
+        box-shadow: 0px -2px 0px #000;
+    }
+
+    .key.enterDown {
+        width: 51px;
+        height: 66px;
+        margin-top: -30px;
+        margin-bottom: -1px;
+    }
+
+    .key.shiftL {
+        width: 55px;
+    }
+
+    .key.shiftR {
+        width: 66px;
+    }
+
+    .key.space {
+        width: 321px;
+    }
+
+    .key.ctrl {
+        width: 60px;
+    }
+
+    .key.winAlt {
+        width: 50px;
+    }
+</style>
+
+<div class="keyboard">
+    <!-- Linha 1 -->
+    <div class="row">
+        <div class="key small" data-key="escape">Esc</div>
+        <div class="key blank"></div>
+        <div class="key small" data-key="f1">F1</div>
+        <div class="key small" data-key="f2">F2</div>
+        <div class="key small" data-key="f3">F3</div>
+        <div class="key small" data-key="f4">F4</div>
+        <div class="key small blank"></div>
+        <div class="key small" data-key="f5">F5</div>
+        <div class="key small" data-key="f6">F6</div>
+        <div class="key small" data-key="f7">F7</div>
+        <div class="key small" data-key="f8">F8</div>
+        <div class="key small blank"></div>
+        <div class="key small" data-key="f9">F9</div>
+        <div class="key small" data-key="f10">F10</div>
+        <div class="key small" data-key="f11">F11</div>
+        <div class="key small" data-key="f12">F12</div>
+    </div>
+
+    <!-- Linha 2 -->
+    <div class="row">
+        <div class="key" data-key="'">'</div>
+        <div class="key" data-key="1">1</div>
+        <div class="key" data-key="2">2</div>
+        <div class="key" data-key="3">3</div>
+        <div class="key" data-key="4">4</div>
+        <div class="key" data-key="5">5</div>
+        <div class="key" data-key="6">6</div>
+        <div class="key" data-key="7">7</div>
+        <div class="key" data-key="8">8</div>
+        <div class="key" data-key="9">9</div>
+        <div class="key" data-key="0">0</div>
+        <div class="key" data-key="-">-</div>
+        <div class="key" data-key="=">=</div>
+        <div class="key backspace" data-key="backspace">⌫</div>
+    </div>
+
+    <!-- Linha 3 -->
+    <div class="row">
+        <div class="key tab" data-key="tab">Tab</div>
+        <div class="key" data-key="q">Q</div>
+        <div class="key" data-key="w">W</div>
+        <div class="key" data-key="e">E</div>
+        <div class="key" data-key="r">R</div>
+        <div class="key" data-key="t">T</div>
+        <div class="key" data-key="y">Y</div>
+        <div class="key" data-key="u">U</div>
+        <div class="key" data-key="i">I</div>
+        <div class="key" data-key="o">O</div>
+        <div class="key" data-key="p">P</div>
+        <div class="key" data-key="dead">´</div>
+        <div class="key" data-key="[">[</div>
+        <div class="key enter enterUpper" data-key="enter">Enter</div>
+    </div>
+
+    <!-- Linha 4 -->
+    <div class="row">
+        <div class="key caps" data-key="capslock">Caps</div>
+        <div class="key" data-key="a">A</div>
+        <div class="key" data-key="s">S</div>
+        <div class="key" data-key="d">D</div>
+        <div class="key" data-key="f">F</div>
+        <div class="key" data-key="g">G</div>
+        <div class="key" data-key="h">H</div>
+        <div class="key" data-key="j">J</div>
+        <div class="key" data-key="k">K</div>
+        <div class="key" data-key="l">L</div>
+        <div class="key" data-key="ç">Ç</div>
+        <div class="key" data-key="~">~</div>
+        <div class="key" data-key="]">]</div>
+        <div class="key enter enterDown" data-key="enter"></div>
+    </div>
+
+    <!-- Linha 5 -->
+    <div class="row">
+        <div class="key shiftL" data-key="shift">Shift</div>
+        <div class="key" data-key="backslash">\</div>
+        <div class="key" data-key="z">Z</div>
+        <div class="key" data-key="x">X</div>
+        <div class="key" data-key="c">C</div>
+        <div class="key" data-key="v">V</div>
+        <div class="key" data-key="b">B</div>
+        <div class="key" data-key="n">N</div>
+        <div class="key" data-key="m">M</div>
+        <div class="key" data-key=",">,</div>
+        <div class="key" data-key=".">.</div>
+        <div class="key" data-key=";">;</div>
+        <div class="key" data-key="/">/</div>
+        <div class="key shiftR" data-key="shift">Shift</div>
+    </div>
+
+    <!-- Linha 6 -->
+    <div class="row">
+        <div class="key small ctrl" data-key="control">Ctrl</div>
+        <div class="key small winAlt" data-key="meta">Win</div>
+        <div class="key small winAlt" data-key="alt">Alt</div>
+        <div class="key small space" data-key=" "></div>
+        <div class="key small winAlt" data-key="alt">Alt</div>
+        <div class="key small winAlt" data-key="meta">Win</div>
+        <div class="key small" data-key="contextmenu">🔳</div>
+        <div class="key small ctrl" data-key="control">Ctrl</div>
+    </div>
+</div>
+
+<script>
+    function highlightKey(label) {
+        console.log(label);
+
+        let keys;
+        const lowerLabel = label.toLowerCase();
+
+        if (lowerLabel === "enter") {
+            keys = document.querySelectorAll(`.key[data-key="enter"]`);
+        } else if (lowerLabel === "control" || lowerLabel === "ctrl") {
+            keys = document.querySelectorAll(`.key[data-key="control"]`);
+        } else if (lowerLabel === "shift") {
+            keys = document.querySelectorAll(`.key[data-key="shift"]`);
+        } else if (lowerLabel === "\\") {
+            keys = [document.querySelector('.key[data-key="backslash"]')];
+        } else {
+            const key = document.querySelector(
+                `.key[data-key="${lowerLabel}"]`
+            );
+            if (!key) return;
+            keys = [key];
+        }
+
+        keys.forEach((key) => {
+            if (!key) return;
+            key.classList.add("active");
+            setTimeout(() => key.classList.remove("active"), 500);
+        });
+    }
+
+    // Detecta teclas reais pressionadas
+    document.addEventListener("keydown", (e) => {
+        const code =
+            e.key.length === 1 ? e.key.toLowerCase() : e.key.toLowerCase();
+        highlightKey(code);
+    });
+</script>

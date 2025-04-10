@@ -13,6 +13,8 @@
                 height: 100vh;
                 margin: 0;
                 background-color: #f4f4f4;
+                flex-direction: column;
+                gap: 40px;
             }
 
             #menu,
@@ -101,7 +103,7 @@
             }
         </style>
     </head>
-    <body>
+    <body onload="loadKeyboard()">
         <!-- Menu Inicial -->
         <div id="menu">
             <h2>Jogo de Digitação</h2>
@@ -124,7 +126,6 @@
             </button>
         </div>
 
-        <!-- Fase 1 -->
         <div id="game" class="hidden">
             <h3 id="message">Aperte Enter para começar</h3>
             <p id="word" class="hidden">Letra</p>
@@ -139,6 +140,8 @@
             <p id="timer" class="hidden">Tempo: 20.0s</p>
             <button id="backButton" onclick="returnToMenu()">Voltar</button>
         </div>
+
+        <div id="teclado"></div>
 
         <script>
             const fases = {
@@ -253,6 +256,32 @@
             const inputElement = document.getElementById("input");
             const scoreElement = document.getElementById("score");
             const timerElement = document.getElementById("timer");
+
+            function loadKeyboard() {
+                fetch("teclado.html")
+                    .then((response) => response.text())
+                    .then((html) => {
+                        const container = document.querySelector("#teclado");
+                        container.innerHTML = html;
+
+                        // Executa os scripts dentro do HTML carregado
+                        container
+                            .querySelectorAll("script")
+                            .forEach((script) => {
+                                const newScript =
+                                    document.createElement("script");
+                                if (script.src) {
+                                    newScript.src = script.src;
+                                } else {
+                                    newScript.textContent = script.textContent;
+                                }
+                                document.body.appendChild(newScript);
+                            });
+                    })
+                    .catch((err) => {
+                        console.error("Erro ao carregar o teclado:", err);
+                    });
+            }
 
             function returnToMenu() {
                 clearInterval(timerInterval);
@@ -424,7 +453,6 @@
                         }, 2);
                         newLetter();
                     }
-
                 } else {
                     event.preventDefault(); // bloqueia a digitação da letra errada
                     hasMistakeInPhrase = true;

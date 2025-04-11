@@ -156,6 +156,7 @@
             <button
                 onclick="resetarProgresso()"
                 style="background-color: #f44336; color: white"
+                id="resetButton"
                 class="hidden"
             >
                 Resetar Progresso
@@ -175,9 +176,8 @@
             <p id="score" class="hidden">Pontuação: 0</p>
             <p id="timer" class="hidden">Tempo: 20.0s</p>
             <button id="backButton" onclick="returnToMenu()">Voltar</button>
-
         </div>
-        
+
         <div id="teclado" class="hidden"></div>
         <div id="dedos" class="hidden"></div>
 
@@ -257,20 +257,26 @@
                         "Atender sempre com empatia",
                         "Lembre de usar a fraseologia correta",
                         "Perguntar se pode ajudar em algo mais",
-                        "Acompanhar o cliente até o final do atendimento",
                         "Agradecer o cliente pelo contato",
-                        "Retorno ao cliente a cada cinquenta segundos",
-                        "Atender sempre com empatia",
-                        "Lembre de usar a fraseologia correta",
-                        "Perguntar se pode ajudar em algo mais",
-                        "Acompanhar o cliente até o final do atendimento",
-                        "Agradecer o cliente pelo contato",
+                        "Manter um tom de voz calmo e cordial",
+                        "Registrar corretamente os dados do cliente",
+                        "Evitar palavras informais e desnecessárias",
+                        "Repetir a reclamação do cliente para confirmar",
+                        "Ser claro e objetivo na conversa",
+                        "Encerrar o atendimento com a fraseologia",
+                        "Garantir que as dúvidas foram esclarecidas",
+                        "Controlar o tma sem apressar o cliente",
+                        "Revisar os dados antes de transferir",
+                        "Seguir o script mas com naturalidade",
+                        "Usar as pausas com responsabilidade",
+                        "Fechar seus gic no fim do dia",
                     ],
                     pontos: 0, // não tem pontuação fixa
                     tempo: 30.0,
                 },
             };
 
+            let digitos = ""; // armazena o que o usuário digita
             let currentLetter = "";
             let score = 0;
             let letterIndex = 0;
@@ -378,7 +384,12 @@
                 score = 0;
                 time = faseAtual.tempo;
                 updateScore();
-                letters = [...faseAtual.letras];
+                // Randomiza a ordem das frases apenas na fase 4
+                if (currentFase === 4) {
+                    letters = shuffleArray([...faseAtual.letras]);
+                } else {
+                    letters = [...faseAtual.letras];
+                }
                 currentIndex = 0;
                 newLetter();
                 clearInterval(timerInterval);
@@ -512,7 +523,11 @@
                     }
                 }
 
-                if (currentLetter.toLowerCase().startsWith(proposedValue.toLowerCase())) {
+                if (
+                    currentLetter
+                        .toLowerCase()
+                        .startsWith(proposedValue.toLowerCase())
+                ) {
                     const nextLetter = currentLetter.charAt(
                         proposedValue.length
                     );
@@ -577,6 +592,15 @@
                 }
             });
 
+            function shuffleArray(array) {
+                const copy = [...array];
+                for (let i = copy.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [copy[i], copy[j]] = [copy[j], copy[i]];
+                }
+                return copy;
+            }
+
             const progressoSalvo =
                 JSON.parse(localStorage.getItem("progresso")) || {};
             const progresso = {
@@ -611,6 +635,29 @@
             function showRanking() {
                 alert("Ranking ainda não implementado.");
             }
+
+            document.addEventListener("keydown", (e) => {
+                // Só continua se o menu estiver visível (sem a classe 'hidden')
+                if (!menu || menu.classList.contains("hidden")) return;
+
+                // ignora se a tecla for algo como Shift, Ctrl etc.
+                if (e.key.length === 1) {
+                    digitos += e.key.toLowerCase(); // adiciona à string, em minúsculo
+
+                    // mantém apenas os últimos 20 caracteres (pra evitar string gigante)
+                    if (digitos.length > 20) {
+                        digitos = digitos.slice(-20);
+                    }
+
+                    // verifica se a palavra secreta foi digitada
+                    if (digitos.includes("luizinho")) {
+                        document
+                            .querySelector("#resetButton")
+                            .classList.remove("hidden");
+                        digitos = ""; // reseta após ativar
+                    }
+                }
+            });
 
             function resetarProgresso() {
                 if (

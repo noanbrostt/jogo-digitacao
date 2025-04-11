@@ -198,8 +198,11 @@
 </div>
 
 <script>
-    function highlightKey(label) {
-        console.log(label);
+    function highlightKey(label) {  
+        const activedKey = document.querySelectorAll(".active");
+        activedKey.forEach((key) => {
+            key.classList.remove("active");
+        });
 
         let keys;
         const lowerLabel = label.toLowerCase();
@@ -223,14 +226,6 @@
         keys.forEach((key) => {
             if (!key) return;
             key.classList.add("active");
-            setTimeout(() => key.classList.remove("active"), 500);
         });
     }
-
-    // Detecta teclas reais pressionadas
-    document.addEventListener("keydown", (e) => {
-        const code =
-            e.key.length === 1 ? e.key.toLowerCase() : e.key.toLowerCase();
-        highlightKey(code);
-    });
 </script>

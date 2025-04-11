@@ -182,32 +182,61 @@
 </div>
 
 <script>
-    function highlightFinger(fingerName) {
-        document
-            .querySelectorAll(".finger")
-            .forEach((f) => f.classList.remove("highlight"));
+    function highlightFingerByKey(key) {
+        // Limpa qualquer destaque anterior
+        document.querySelectorAll('.finger').forEach(f => f.classList.remove('highlight'));
 
-        const nameToId = {
-            mindinhoEsq: "left-pinky",
-            anelarEsq: "left-ring",
-            medioEsq: "left-middle",
-            indicadorEsq: "left-index",
-            polegarEsq: "left-thumb",
-            polegarDir: "right-thumb",
-            indicadorDir: "right-index",
-            medioDir: "right-middle",
-            anelarDir: "right-ring",
-            mindinhoDir: "right-pinky",
+        // Mapeamento de teclas para dedos
+        const keyToFinger = {
+            // Mão esquerda
+            'a': 'left-pinky',
+            'q': 'left-pinky',
+            'z': 'left-pinky',
+
+            's': 'left-ring',
+            'w': 'left-ring',
+            'x': 'left-ring',
+
+            'd': 'left-middle',
+            'e': 'left-middle',
+            'c': 'left-middle',
+
+            'f': 'left-index',
+            'r': 'left-index',
+            't': 'left-index',
+            'g': 'left-index',
+            'v': 'left-index',
+            'b': 'left-index',
+
+            // Mão direita
+            'h': 'right-index',
+            'y': 'right-index',
+            'u': 'right-index',
+            'j': 'right-index',
+            'n': 'right-index',
+            'm': 'right-index',
+
+            'k': 'right-middle',
+            'i': 'right-middle',
+
+            'l': 'right-ring',
+            'o': 'right-ring',
+
+            'ç': 'right-pinky', // layout ABNT2
+            'p': 'right-pinky',
+            ';': 'right-pinky',
+            ',': 'right-pinky',
+            '.': 'right-pinky'
         };
 
-        const id = nameToId[fingerName];
-        const el = document.getElementById(id);
-        if (el) {
-            el.classList.add("highlight");
-        } else {
-            console.warn("Nome de dedo inválido:", fingerName);
+        const fingerId = keyToFinger[key.toLowerCase()];
+        if (fingerId) {
+            const el = document.getElementById(fingerId);
+            if (el) el.classList.add('highlight');
+        // } else {
+        //     console.warn('Tecla sem dedo mapeado:', key);
         }
-    }
+        }
 
     // Exemplo de uso
     // setTimeout(() => highlightFinger("indicadorEsq"), 1000);

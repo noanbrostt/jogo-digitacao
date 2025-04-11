@@ -34,6 +34,8 @@
                 border-radius: 4px;
                 border: 1px solid #ddd;
                 cursor: pointer;
+                z-index: 3;
+                position: relative;
             }
 
             input {
@@ -107,6 +109,11 @@
                 margin-top: -160px;
                 margin-left: -361px;
             }
+
+            #teclado {
+                scale: 0.8;
+                margin-block: -42px;
+            }
         </style>
     </head>
     <body onload="loadKeyboard(); loadFingers();">
@@ -149,7 +156,7 @@
             <div id="dedos"></div>
         </div>
 
-        <div id="teclado"></div>
+        <div id="teclado" class="hidden"></div>
 
         <script>
             const fases = {
@@ -264,6 +271,8 @@
             const inputElement = document.getElementById("input");
             const scoreElement = document.getElementById("score");
             const timerElement = document.getElementById("timer");
+            const dedos = document.getElementById("dedos");
+            const teclado = document.getElementById("teclado");
 
             function loadKeyboard() {
                 fetch("teclado.html")
@@ -321,6 +330,7 @@
                 clearInterval(timerInterval);
                 readyToStart = false;
                 game.classList.add("hidden");
+                teclado.classList.add("hidden");
                 menu.classList.remove("hidden");
             }
 
@@ -330,6 +340,13 @@
 
                 menu.classList.add("hidden");
                 game.classList.remove("hidden");
+                if (currentFase === 4) {
+                    dedos.classList.add("hidden");
+                    teclado.classList.add("hidden");
+                } else {
+                    dedos.classList.remove("hidden");
+                    teclado.classList.remove("hidden");
+                }
                 wordElement.classList.add("hidden");
                 inputElement.classList.add("hidden");
 
@@ -388,10 +405,22 @@
                     endGame();
                     return;
                 }
+
                 currentLetter = letters[currentIndex];
                 currentIndex++;
                 wordElement.textContent = currentLetter;
                 inputElement.value = "";
+
+                if (!readyToStart && currentFase !== 4) {
+                    const nextLetter = getNextLetterToHighlight();
+                    highlightKey(nextLetter);
+                    highlightFingerByKey(nextLetter);
+                }
+            }
+
+            function getNextLetterToHighlight() {
+                const typed = inputElement.value;
+                return currentLetter.charAt(typed.length);
             }
 
             function endGame() {
@@ -403,6 +432,8 @@
                 } else {
                     finalScore =
                         score >= faseAtual.letras.length ? faseAtual.pontos : 0;
+                    highlightKey(""); // Chama a função para destacar a tecla correspondente
+                    highlightFingerByKey(""); // Chama a função para destacar o dedo correspondente
                 }
 
                 alert(
@@ -412,9 +443,6 @@
                 );
 
                 // Atualiza o progresso apenas se a pontuação for maior que a anterior
-                console.log(
-                    `Pontuação atual: ${progresso[currentFase]}, Nova pontuação: ${finalScore}`
-                );
                 if (finalScore > progresso[currentFase]) {
                     progresso[currentFase] = finalScore;
                     salvarProgresso(currentFase, finalScore);
@@ -465,6 +493,11 @@
                 }
 
                 if (currentLetter.startsWith(proposedValue)) {
+                    if (currentFase === 3) {
+                        const nextLetter = currentLetter.charAt(proposedValue.length);
+                        highlightKey(nextLetter);
+                        highlightFingerByKey(nextLetter);
+                    }
                     // Se acertou a palavra inteira
                     if (proposedValue === currentLetter) {
                         if (currentFase === 4) {
@@ -514,11 +547,7 @@
             };
 
             function salvarProgresso(fase, pontuacao) {
-                console.log(`Salvando progresso da fase ${fase}: ${pontuacao}`);
                 progresso[fase] = Math.max(progresso[fase] || 0, pontuacao);
-                console.log(progresso);
-                console.log(JSON.stringify(progresso));
-
                 localStorage.setItem("progresso", JSON.stringify(progresso));
             }
 

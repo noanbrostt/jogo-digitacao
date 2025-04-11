@@ -114,13 +114,27 @@
 
             #dedos {
                 position: absolute;
-                margin-top: -160px;
-                margin-left: -361px;
+                height: 0;
+                width: 0;
+                margin-bottom: 560px;
+            }
+
+            #dedos.small {
+                margin-top: 710px;
+
+                .hands {
+                    gap: 950px;
+                }
             }
 
             #teclado {
                 scale: 0.8;
                 margin-block: -42px;
+            }
+
+            #teclado.small {
+                scale: 0.55;
+                margin-block: -95px;
             }
         </style>
     </head>
@@ -142,6 +156,7 @@
             <button
                 onclick="resetarProgresso()"
                 style="background-color: #f44336; color: white"
+                class="hidden"
             >
                 Resetar Progresso
             </button>
@@ -161,10 +176,10 @@
             <p id="timer" class="hidden">Tempo: 20.0s</p>
             <button id="backButton" onclick="returnToMenu()">Voltar</button>
 
-            <div id="dedos"></div>
         </div>
-
+        
         <div id="teclado" class="hidden"></div>
+        <div id="dedos" class="hidden"></div>
 
         <script>
             const fases = {
@@ -331,6 +346,7 @@
                 readyToStart = false;
                 game.classList.add("hidden");
                 teclado.classList.add("hidden");
+                dedos.classList.add("hidden");
                 menu.classList.remove("hidden");
             }
 
@@ -340,13 +356,8 @@
 
                 menu.classList.add("hidden");
                 game.classList.remove("hidden");
-                if (currentFase === 4) {
-                    dedos.classList.add("hidden");
-                    teclado.classList.add("hidden");
-                } else {
-                    dedos.classList.remove("hidden");
-                    teclado.classList.remove("hidden");
-                }
+                dedos.classList.remove("hidden", "small");
+                teclado.classList.remove("hidden", "small");
                 wordElement.classList.add("hidden");
                 inputElement.classList.add("hidden");
 
@@ -420,7 +431,7 @@
                 }
 
                 // Destacar no teclado e nas mãos a próxima letra
-                if (!readyToStart && currentFase !== 4) {
+                if (!readyToStart) {
                     const nextLetter = getNextLetterToHighlight();
                     highlightKey(nextLetter);
                     highlightFingerByKey(nextLetter);
@@ -441,9 +452,9 @@
                 } else {
                     finalScore =
                         score >= faseAtual.letras.length ? faseAtual.pontos : 0;
-                    highlightKey(""); // Chama a função para destacar a tecla correspondente
-                    highlightFingerByKey(""); // Chama a função para destacar o dedo correspondente
                 }
+                highlightKey(""); // Chama a função para destacar a tecla correspondente
+                highlightFingerByKey(""); // Chama a função para destacar o dedo correspondente
 
                 alert(
                     finalScore > 0
@@ -485,7 +496,7 @@
 
                 if (
                     currentFase === 4 &&
-                    currentLetter.startsWith(proposedValue)
+                    currentLetter.toLowerCase().startsWith(proposedValue)
                 ) {
                     // Somar 3 pontos para cada letra certa digitada (sem repetir caso digite a mesma letra de novo)
                     const letrasDigitadasCertas = proposedValue.length;
@@ -501,14 +512,12 @@
                     }
                 }
 
-                if (currentLetter.startsWith(proposedValue)) {
-                    if (currentFase === 3) {
-                        const nextLetter = currentLetter.charAt(
-                            proposedValue.length
-                        );
-                        highlightKey(nextLetter);
-                        highlightFingerByKey(nextLetter);
-                    }
+                if (currentLetter.toLowerCase().startsWith(proposedValue.toLowerCase())) {
+                    const nextLetter = currentLetter.charAt(
+                        proposedValue.length
+                    );
+                    highlightKey(nextLetter);
+                    highlightFingerByKey(nextLetter);
 
                     // Atualiza a cor das letras digitadas corretamente
                     const spans = wordElement.querySelectorAll("span");
@@ -523,7 +532,10 @@
                     });
 
                     // Se acertou a palavra inteira
-                    if (proposedValue === currentLetter) {
+                    if (
+                        proposedValue.toLowerCase() ===
+                        currentLetter.toLowerCase()
+                    ) {
                         if (currentFase === 4) {
                             const bonus = hasMistakeInPhrase
                                 ? currentLetter.length * 2
@@ -557,6 +569,10 @@
             document.addEventListener("keydown", (event) => {
                 if (readyToStart && event.key === "Enter") {
                     readyToStart = false;
+                    if (currentFase === 4) {
+                        dedos.classList.add("small");
+                        teclado.classList.add("small");
+                    }
                     initializeGame();
                 }
             });

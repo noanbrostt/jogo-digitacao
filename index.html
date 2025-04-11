@@ -104,6 +104,14 @@
                 border-color: green;
             }
 
+            .pending {
+                color: orange;
+            }
+
+            .correct {
+                color: limegreen;
+            }
+
             #dedos {
                 position: absolute;
                 margin-top: -160px;
@@ -162,14 +170,6 @@
             const fases = {
                 1: {
                     letras: [
-                        "a",
-                        "s",
-                        "d",
-                        "f",
-                        "ç",
-                        "l",
-                        "k",
-                        "j",
                         "a",
                         "s",
                         "d",
@@ -408,9 +408,18 @@
 
                 currentLetter = letters[currentIndex];
                 currentIndex++;
-                wordElement.textContent = currentLetter;
                 inputElement.value = "";
 
+                // Exibir cada letra da palavra em um span para colorir individualmente
+                wordElement.innerHTML = "";
+                for (let i = 0; i < currentLetter.length; i++) {
+                    const span = document.createElement("span");
+                    span.textContent = currentLetter[i];
+                    span.classList.add("pending"); // cor inicial laranja
+                    wordElement.appendChild(span);
+                }
+
+                // Destacar no teclado e nas mãos a próxima letra
                 if (!readyToStart && currentFase !== 4) {
                     const nextLetter = getNextLetterToHighlight();
                     highlightKey(nextLetter);
@@ -494,10 +503,25 @@
 
                 if (currentLetter.startsWith(proposedValue)) {
                     if (currentFase === 3) {
-                        const nextLetter = currentLetter.charAt(proposedValue.length);
+                        const nextLetter = currentLetter.charAt(
+                            proposedValue.length
+                        );
                         highlightKey(nextLetter);
                         highlightFingerByKey(nextLetter);
                     }
+
+                    // Atualiza a cor das letras digitadas corretamente
+                    const spans = wordElement.querySelectorAll("span");
+                    spans.forEach((span, index) => {
+                        if (index < proposedValue.length) {
+                            span.classList.remove("pending");
+                            span.classList.add("correct");
+                        } else {
+                            span.classList.remove("correct");
+                            span.classList.add("pending");
+                        }
+                    });
+
                     // Se acertou a palavra inteira
                     if (proposedValue === currentLetter) {
                         if (currentFase === 4) {

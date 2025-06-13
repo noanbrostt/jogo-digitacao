@@ -1,0 +1,30 @@
+# docker-compose.yml
+version: '3.8' # Versão da sintaxe do Docker Compose
+
+services:
+  frontend:
+    image: nginx:alpine # Imagem oficial do Nginx
+    container_name: jogo-digitacao-frontend
+    ports:
+      - "80:80" # Mapeia a porta 80 do host para a porta 80 do container
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro # Monta sua pasta frontend no diretório de serviço do Nginx
+                                           # :ro significa read-only (somente leitura)
+    restart: always # Reinicia o container automaticamente se ele parar
+
+  backend:
+    build:
+      context: . # O contexto de construção é o diretório atual (onde está o Dockerfile)
+      dockerfile: Dockerfile # O nome do Dockerfile a ser usado
+    container_name: jogo-digitacao-backend
+    ports:
+      - "3000:3000" # Mapeia a porta 3000 do host para a porta 3000 do container
+    volumes:
+      - ./backend/data:/app/data # Monta a pasta 'data' do host para a pasta 'data' do container
+                                 # Isso é CRUCIAL para persistir os dados do SQLite!
+    environment:
+      - PORT=3000 # Passa a porta como variável de ambiente para o container
+      - DATABASE_PATH=/app/data/database.sqlite # Passa o caminho do DB para o container
+    restart: always # Reinicia o container automaticamente se ele parar
+    depends_on:
+      - frontend # O backend depende do frontend (garante que o frontend seja levantado primeiro, embora não seja estritamente necessário para o funcionamento)

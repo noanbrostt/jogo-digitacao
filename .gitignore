@@ -1,0 +1,45 @@
+# Node.js
+node_modules/
+.env
+npm-debug.log
+yarn-error.log
+.pnp/
+.pnp.js
+
+# SQLite (os dados do SQLite que persistem localmente)
+backend/data/*.sqlite
+backend/data/*.sqlite-journal
+backend/data/
+
+# Docker
+# O Dockerfile e docker-compose.yml devem ser versionados!
+# Então não os inclua aqui, a menos que você tenha uma razão específica para não fazer.
+# Mas para garantir que a imagem não inclua arquivos de build temporários ou caches.
+.dockerignore
+
+# Logs
+*.log
+logs/
+
+# MacOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# IDEs e Editores de Texto
+.vscode/        # VS Code
+.idea/          # IntelliJ IDEA
+*.sublime-project
+*.sublime-workspace
+.project
+.classpath
+.settings/
+
+# Arquivos de backup e temporários
+*~
+*.bak
+*.swp
+*.swo

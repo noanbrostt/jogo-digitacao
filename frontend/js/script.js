@@ -110,7 +110,7 @@ const dedos = document.getElementById("dedos");
 const teclado = document.getElementById("teclado");
 
 function loadKeyboard() {
-    fetch("../html/teclado.html")
+    fetch("../templates/teclado.html")
         .then((response) => response.text())
         .then((html) => {
             const container = document.querySelector("#teclado");
@@ -136,7 +136,7 @@ function loadKeyboard() {
 }
 
 function loadFingers() {
-    fetch("../html/dedos.html")
+    fetch("../templates/dedos.html")
         .then((response) => response.text())
         .then((html) => {
             const container = document.querySelector("#dedos");

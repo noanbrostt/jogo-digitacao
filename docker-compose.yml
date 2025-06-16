@@ -1,30 +1,32 @@
 # docker-compose.yml
-version: '3.8' # Versão da sintaxe do Docker Compose
+version: '3.8'
 
 services:
   frontend:
-    image: nginx:alpine # Imagem oficial do Nginx
+    image: nginx:alpine
     container_name: jogo-digitacao-frontend
     ports:
-      - "80:80" # Mapeia a porta 80 do host para a porta 80 do container
+      - "80:80"
     volumes:
-      - ./frontend:/usr/share/nginx/html:ro # Monta sua pasta frontend no diretório de serviço do Nginx
-                                           # :ro significa read-only (somente leitura)
-    restart: always # Reinicia o container automaticamente se ele parar
+      - ./frontend:/usr/share/nginx/html:ro        # Seus arquivos estáticos
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro # <-- Monta seu arquivo de configuração
+    restart: always
 
   backend:
     build:
-      context: . # O contexto de construção é o diretório atual (onde está o Dockerfile)
-      dockerfile: Dockerfile # O nome do Dockerfile a ser usado
+      context: .
+      dockerfile: Dockerfile
     container_name: jogo-digitacao-backend
-    ports:
-      - "3000:3000" # Mapeia a porta 3000 do host para a porta 3000 do container
+    # Não precisa mais expor a porta 3000 do backend para o host (ports)
+    # Se você usar o Nginx como proxy reverso para o backend.
+    # No entanto, para desenvolvimento e testes diretos, ainda pod e ser útil manter.
+    # ports:
+    #   - "3000:3000"
     volumes:
-      - ./backend/data:/app/data # Monta a pasta 'data' do host para a pasta 'data' do container
-                                 # Isso é CRUCIAL para persistir os dados do SQLite!
+      - ./backend/data:/app/data
     environment:
-      - PORT=3000 # Passa a porta como variável de ambiente para o container
-      - DATABASE_PATH=/app/data/database.sqlite # Passa o caminho do DB para o container
-    restart: always # Reinicia o container automaticamente se ele parar
+      - PORT=3000
+      - DATABASE_PATH=/app/data/database.sqlite
+    restart: always
     depends_on:
-      - frontend # O backend depende do frontend (garante que o frontend seja levantado primeiro, embora não seja estritamente necessário para o funcionamento)
+      - frontend

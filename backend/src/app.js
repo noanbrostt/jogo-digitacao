@@ -11,14 +11,21 @@ app.use(express.json()); // Permite que o Express parseie JSON no corpo das requ
 
 // Rota para salvar uma nova pontuação
 app.post('/api/scores', (req, res) => {
-    const { player, score } = req.body;
+    // Agora esperamos 'nome', 'matricula' e 'score'
+    const { nome, matricula, score } = req.body;
 
-    if (!player || typeof score === 'undefined') {
-        return res.status(400).json({ error: 'Player e Score são obrigatórios.' });
+    // Validação básica: nome é obrigatório, matricula deve ser uma string de 6 caracteres se fornecida
+    if (!nome) {
+        return res.status(400).json({ error: 'Nome é obrigatório.' });
+    }
+    if (matricula && (typeof matricula !== 'string' || matricula.length !== 6 || !/^\d{6}$/.test(matricula))) {
+        return res.status(400).json({ error: 'Matricula deve ser uma string de 6 números.' });
     }
 
-    const stmt = db.prepare('INSERT INTO scores (player, score) VALUES (?, ?)');
-    stmt.run(player, score, function(err) {
+    // A coluna 'score' agora pode ser NULL, então não precisa de validação de 'undefined' para ela.
+
+    const stmt = db.prepare('INSERT INTO scores (nome, matricula, score) VALUES (?, ?, ?)');
+    stmt.run(nome, matricula, score, function(err) { // Passa os novos parâmetros
         if (err) {
             return res.status(500).json({ error: err.message });
         }
@@ -27,9 +34,9 @@ app.post('/api/scores', (req, res) => {
     stmt.finalize();
 });
 
-// Rota para obter as top 10 pontuações
+// Rota para obter as top 10 pontuações (agora com nome e matricula)
 app.get('/api/scores', (req, res) => {
-    db.all('SELECT player, score, timestamp FROM scores ORDER BY score DESC LIMIT 10', [], (err, rows) => {
+    db.all('SELECT nome, matricula, score, timestamp FROM scores ORDER BY score DESC LIMIT 10', [], (err, rows) => {
         if (err) {
             return res.status(500).json({ error: err.message });
         }
@@ -37,16 +44,11 @@ app.get('/api/scores', (req, res) => {
     });
 });
 
-// Servir arquivos estáticos do frontend
-// IMPORTANTE: Isso será usado se você decidir servir o frontend pelo Node.js.
-// Se usar Nginx via Docker Compose, esta parte não será necessária no Node.js.
-// Por enquanto, vamos manter para testes locais.
-app.use(express.static(path.join(__dirname, '../../frontend')));
-
-// Rota padrão para servir o index.html (se o frontend for servido pelo Node.js)
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../../frontend/index.html'));
-});
+// Se o frontend for servido pelo Nginx, as linhas abaixo podem ser removidas
+// app.use(express.static(path.join(__dirname, '../../frontend')));
+// app.get('/', (req, res) => {
+//     res.sendFile(path.join(__dirname, '../../frontend/index.html'));
+// });
 
 // Inicia o servidor
 app.listen(port, () => {

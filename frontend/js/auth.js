@@ -2,6 +2,9 @@
 
 // Função para verificar o status do login no backend
 async function checkLoginStatus() {
+    $('body').hide();
+    // Swal.showLoading();
+
     try {
         const response = await fetch('/api/status'); // Chama o endpoint de status do backend
         const data = await response.json();
@@ -13,14 +16,23 @@ async function checkLoginStatus() {
             // Se estiver logado, você pode atualizar a UI com as informações do usuário
             console.log(`Usuário logado: ${data.nome} (${data.matricula})`);
             // Exemplo: Atualizar um elemento na página principal
-            const userInfoElement = document.getElementById('userInfo');
+
+            let nomes = data.nome.split(" ");
+            let primeiroNome = nomes[0].charAt(0).toUpperCase() + nomes[0].slice(1).toLowerCase();
+            let ultimoNome = nomes[nomes.length - 1].charAt(0).toUpperCase() + nomes[nomes.length - 1].slice(1).toLowerCase();
+            let nomeFormatado = primeiroNome + " " + ultimoNome;
+
+            const userInfoElement = document.getElementById('nome_usuario');
             if (userInfoElement) {
-                userInfoElement.textContent = `Logado como: ${data.nome} (${data.matricula})`;
+                userInfoElement.textContent = `Olá, ${nomeFormatado}`;
             }
             // Opcional: Salvar no localStorage também para consistência, embora a sessão seja o principal
             localStorage.setItem('userMatricula', data.matricula);
             localStorage.setItem('userName', data.nome);
         }
+        
+        $('body').show();
+        // Swal.close();
     } catch (error) {
         console.error('Erro ao verificar status de login:', error);
         // Em caso de erro na requisição (servidor fora do ar, etc.), redirecionar para login

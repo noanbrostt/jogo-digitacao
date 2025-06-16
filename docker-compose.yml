@@ -1,6 +1,4 @@
 # docker-compose.yml
-version: '3.8'
-
 services:
   frontend:
     image: nginx:alpine
@@ -25,8 +23,12 @@ services:
     volumes:
       - ./backend/data:/app/data
     environment:
-      - PORT=3000
-      - DATABASE_PATH=/app/data/database.sqlite
+     - PORT=3000
+     - DATABASE_PATH=/app/data/database.sqlite
+     - SESSION_SECRET=minhasenhasuperseguraealeatoria
+     - EXTERNAL_AUTH_API_URL=http://172.32.1.73:9910/login
+     - EXTERNAL_RESET_PASSWORD_API_URL=http://172.32.1.73:9910/resetar_senha
+     - API_KEY=DVtLwuTJv83QWGPzJKPEi
     restart: always
     depends_on:
       - frontend

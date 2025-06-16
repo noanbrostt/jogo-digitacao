@@ -9,9 +9,11 @@
     <!-- Fontes e Estilos Básicos -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <!-- Incluindo Font Awesome para os ícones de olho (SVGs já estão inline, mas esta linha é comum para outros ícones) -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" crossorigin="anonymous"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+        crossorigin="anonymous" />
     <!-- Incluindo Bootstrap CSS para o Modal -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
+        crossorigin="anonymous">
 
     <link rel="stylesheet" href="./css/style.css">
 
@@ -143,7 +145,7 @@
 
         .container input {
             background-color: #eee;
-            border: none;
+            /* border: none; */
             margin: 8px 0;
             padding: 10px 15px;
             font-size: 13px;
@@ -490,8 +492,7 @@
     </div>
 
     <!-- Scripts JavaScript -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
-        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" crossorigin="anonymous"></script>
     <!-- Bootstrap Bundle com Popper.js (necessário para o modal) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"
         xintegrity="sha384-HwwvtgBNo3bKMpLYS8iLEpwsjC8fXyP/rTRMrvL6NfQ3V5yA7Q2a2FfR7R3T8V2k" crossorigin="anonymous">
@@ -517,43 +518,59 @@
             }
         });
 
-        // Função placeholder para validarCampos.
-        // Você precisará definir a lógica real desta função.
-        async function validarCampos(campos) {
-            let valido = true;
-            for (const campo of campos) {
-                campo.element.removeClass("input-error"); // Limpa erro anterior
-                if (campo.element.val().trim().length < campo.minLength) {
-                    campo.element.addClass("input-error");
-                    Toast.fire({
-                        icon: "error",
-                        title: campo.message,
+        function validarCampos(campos) {
+            return new Promise((resolve) => {
+                let erros = [];
+
+                // Resetar erros anteriores
+                campos.forEach((campo) => {
+                    campo.element.removeClass("input-error");
+                });
+
+                setTimeout(() => {
+                    campos.forEach((campo) => {
+                        let valor = "";
+
+                        if (campo.type === "custom") {
+                            if (!campo.isValid) {
+                                erros.push(campo.message);
+                                campo.element.addClass("input-error");
+                            }
+                            return;
+                        }
+
+                        if (
+                            campo.element.is("input") ||
+                            campo.element.is("textarea") ||
+                            campo.element.is("select")
+                        ) {
+                            valor = campo.element.val().trim();
+                        }
+
+                        const minLength = campo.minLength || 1;
+
+                        if (valor.length < minLength) {
+                            erros.push(campo.message);
+                            campo.element.addClass("input-error");
+                        }
                     });
-                    valido = false;
-                    break; // Para na primeira validação falha
-                }
-                // Adicione validações específicas como Regex para matrícula/CPF aqui se quiser
-                if (campo.element.hasClass("input_matricula") && !/^\d{6}$/.test(campo.element.val().trim())) {
-                    campo.element.addClass("input-error");
-                    Toast.fire({
-                        icon: "error",
-                        title: "Matrícula deve conter 6 números.",
-                    });
-                    valido = false;
-                    break;
-                }
-                if (campo.element.hasClass("input_cpf") && campo.element.val().replace(/\D/g, '').trim().length !==
-                    11) {
-                    campo.element.addClass("input-error");
-                    Toast.fire({
-                        icon: "error",
-                        title: "CPF inválido. Deve conter 11 números.",
-                    });
-                    valido = false;
-                    break;
-                }
-            }
-            return valido;
+
+                    if (erros.length > 0) {
+                        erros.forEach((erro, index) => {
+                            console.log(erro);
+                            setTimeout(() => {
+                                Toast.fire({
+                                    icon: "error",
+                                    title: erro,
+                                });
+                            }, index * 600);
+                        });
+                        return resolve(false);
+                    }
+
+                    resolve(true);
+                }, 0);
+            });
         }
 
         // Isso ajusta a altura da viewport real do device
@@ -598,11 +615,11 @@
         $(".input_cpf").mask("000.000.000-00");
         //
 
-        $("#loginForm").on("submit", function (e) { // Evento de submit do formulário de login
+        $("#login_form_btn").on("click", function (e) {
             e.preventDefault();
 
-            let matricula = $(this).find(".input_matricula"); // Busca dentro do formulário atual
-            let senha = $(this).find(".password");
+            let matricula = $(".sign-in .input_matricula");
+            let senha = $(".sign-in .password");
 
             const campos = [{
                     element: matricula,
@@ -620,10 +637,10 @@
                 if (valido) {
                     // ✅ Dados válidos - pode enviar via AJAX
                     $.ajax({
-                        url: "/api/login", // URL estática correspondente ao seu backend Node.js
+                        url: "/api/login",
                         type: "POST",
-                        contentType: "application/json", // Adicionado para JSON no corpo
-                        data: JSON.stringify({ // Envia como JSON
+                        contentType: 'application/json',
+                        data: JSON.stringify({
                             matricula: matricula.val().trim(),
                             senha: senha.val().trim(),
                         }),
@@ -638,25 +655,24 @@
                             });
                         },
                         success: function (response) {
-                            Swal.close(); // Fecha o SweetAlert de loading
                             // Redireciona normalmente
-                            window.location.href = "/"; // Redireciona para a raiz
+                            window.location.href = "/";
                         },
-                        error: function (jqXHR) {
+                        error: function (error) {
                             Swal.close();
-                            const errorMsg = jqXHR.responseJSON && jqXHR.responseJSON
-                                .message ? jqXHR.responseJSON.message :
-                                'Erro desconhecido.';
 
-                            if (errorMsg === 'Matrícula ou senha inválida.') {
-                                // Você pode adicionar classes de erro específicas para os campos aqui
-                                // Ex: matricula.addClass("input-error");
-                                // senha.addClass("input-error");
+                            var erro = error.responseJSON.message;
+                            
+                            if (erro == 'Senha incorreta.') {
+                                senha.addClass("input-error");
+                            } else {
+                                erro = 'Matrícula não encontrada, favor cadastrar-se em "Criar Senha".';
+                                matricula.addClass("input-error");
                             }
 
                             Toast.fire({
                                 icon: "error",
-                                title: errorMsg,
+                                title: erro,
                             });
                         },
                     });
@@ -664,12 +680,10 @@
             });
         });
 
-        $("#registerForm").on("submit", function (e) { // Evento de submit do formulário de registro
-            e.preventDefault();
-
-            let matricula = $(this).find(".input_matricula");
-            let cpf = $(this).find(".input_cpf");
-            let senha = $(this).find(".password");
+        $("#register_form_btn").on("click", function (e) {
+            let matricula = $(".sign-up .input_matricula");
+            let cpf = $(".sign-up .input_cpf");
+            let senha = $(".sign-up .password");
 
             const campos = [{
                     element: matricula,
@@ -692,15 +706,13 @@
                 if (valido) {
                     // ✅ Dados válidos - pode enviar via AJAX
                     $.ajax({
-                        url: "/api/register-password", // Nova URL estática para criação/reset de senha
+                        url: "/api/register-password",
                         type: "POST",
-                        contentType: "application/json", // Adicionado para JSON no corpo
-                        data: JSON.stringify({ // Envia como JSON
+                        data: {
                             matricula: matricula.val().trim(),
-                            cpf: cpf.val().replace(/\D/g, '')
-                        .trim(), // Remove caracteres da máscara
+                            cpf: cpf.val().replace(/\D/g, '').trim(),
                             nova_senha: senha.val().trim(),
-                        }),
+                        },
                         beforeSend: function () {
                             Swal.fire({
                                 title: 'Aguarde...',
@@ -712,36 +724,23 @@
                             });
                         },
                         success: function (response) {
-                            Swal.close();
-                            Toast.fire({
-                                icon: "success",
-                                title: response.message ||
-                                    "Senha criada/resetada com sucesso!",
-                            });
-                            // Opcional: Redirecionar para a tela de login após o registro/reset
-                            $("#container").removeClass(
-                            "active"); // Volta para o painel de login
-                            // Ou window.location.href = "/login.html";
+                            // Redireciona para a página de inscrição
+                            window.location.href = response.redirect;
                         },
-                        error: function (jqXHR) {
+                        error: function (error) {
                             Swal.close();
-                            const errorMsg = jqXHR.responseJSON && jqXHR.responseJSON
-                                .message ? jqXHR.responseJSON.message :
-                                'Erro desconhecido.';
 
-                            // Lógica de adicionar classe de erro baseada na mensagem
-                            if (errorMsg === 'CPF não encontrado.') {
+                            var erro = error.responseJSON.error;
+
+                            if (erro == 'CPF não encontrado.') {
                                 cpf.addClass("input-error");
-                            } else if (errorMsg.includes('Matrícula')) {
-                                matricula.addClass("input-error");
-                            } else if (errorMsg.includes('Senha')) {
-                                senha.addClass("input-error");
                             }
 
                             Toast.fire({
                                 icon: "error",
-                                title: errorMsg,
+                                title: erro,
                             });
+
                         },
                     });
                 }
@@ -764,6 +763,11 @@
                     inputs.eq(index + 1).focus();
                 }
             }
+        });
+
+        // 🔧 Remover borda de erro ao começar a digitar/selecionar
+        $(document).on("input change", ".input-error", function () {
+            $(this).removeClass("input-error");
         });
     </script>
 

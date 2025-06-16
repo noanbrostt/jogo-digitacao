@@ -4,6 +4,15 @@
     --grey: #f0f0f0
 }
 
+:root {
+    --bg-blue: #F9286D;
+    --bg-blue-light: #FA3B62;
+    --bg-orange: #FC654B;
+    --bg-orange-dark: #ca462f;
+    --contrast-primary: #424242;
+    --contrast-secondary: #ffffff;
+}
+
 * {
     margin: 0;
     padding: 0;

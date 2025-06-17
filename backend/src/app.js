@@ -2,9 +2,15 @@
 const express = require('express');
 const session = require('express-session'); // Para gerenciar sessões
 const axios = require('axios'); // Para fazer requisições à API externa
-const { db, findUserByMatricula, insertNewUser } = require('./database'); // Importa o db e as novas funções
+const {
+    db,
+    findUserByMatricula,
+    insertNewUser
+} = require('./database'); // Importa o db e as novas funções
 const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '../../.env') }); // Carrega as variáveis do .env principal
+require('dotenv').config({
+    path: path.resolve(__dirname, '../../.env')
+}); // Carrega as variáveis do .env principal
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -42,13 +48,20 @@ const callExternalAuthApi = async (matricula, senha) => {
             senha: senha,
             api_key: API_KEY
         });
-        
+
         if (response.status === 200) {
             const data = response.data;
             if (data && data.status === 'success') {
-                return { success: true, nome: data.usuario.nome, matricula: matricula }; // Assume que a API retorna 'nome'
+                return {
+                    success: true,
+                    nome: data.usuario.nome,
+                    matricula: matricula
+                }; // Assume que a API retorna 'nome'
             } else {
-                return { success: false, message: data.message || 'Não autorizado pela API externa.' };
+                return {
+                    success: false,
+                    message: data.message || 'Não autorizado pela API externa.'
+                };
             }
         } else {
             // Este bloco será geralmente acionado por um catch se o status não for 2xx
@@ -56,10 +69,16 @@ const callExternalAuthApi = async (matricula, senha) => {
             console.warn(`API externa de autenticação retornou status ${response.status} para ${matricula}.`);
             // Lógica de erro similar ao Laravel
             if (response.status === 401) {
-                return { success: false, message: 'Senha incorreta.' };
+                return {
+                    success: false,
+                    message: 'Senha incorreta.'
+                };
             } else {
                 // Qualquer outro status de erro da API
-                return { success: false, message: 'Matrícula não encontrada, cadastra-se em "Criar Senha".' };
+                return {
+                    success: false,
+                    message: 'Matrícula não encontrada, cadastra-se em "Criar Senha".'
+                };
             }
         }
     } catch (error) {
@@ -70,19 +89,31 @@ const callExternalAuthApi = async (matricula, senha) => {
             console.error('Erro de resposta da API externa de autenticação:', error.response.status, error.response.data);
             if (error.response.status === 401) {
                 // Adaptando a mensagem do Laravel
-                return { success: false, message: 'Senha incorreta.' };
+                return {
+                    success: false,
+                    message: 'Senha incorreta.'
+                };
             } else {
                 // Outros erros como matrícula não encontrada, etc.
-                return { success: false, message: error.response.data.message || 'Matrícula não encontrada, cadastra-se em "Criar Senha".' };
+                return {
+                    success: false,
+                    message: error.response.data.message || 'Matrícula não encontrada, cadastra-se em "Criar Senha".'
+                };
             }
         } else if (error.request) {
             // A requisição foi feita, mas nenhuma resposta foi recebida
             console.error('Nenhuma resposta recebida da API externa de autenticação:', error.request);
-            return { success: false, message: 'Não foi possível conectar à API de autenticação. Verifique sua conexão.' };
+            return {
+                success: false,
+                message: 'Não foi possível conectar à API de autenticação. Verifique sua conexão.'
+            };
         } else {
             // Algo aconteceu na configuração da requisição que disparou um erro
             console.error('Erro ao configurar requisição para API externa de autenticação:', error.message);
-            return { success: false, message: 'Erro interno ao processar requisição de autenticação.' };
+            return {
+                success: false,
+                message: 'Erro interno ao processar requisição de autenticação.'
+            };
         }
     }
 };
@@ -100,44 +131,92 @@ const callExternalResetPasswordApi = async (cpf, nova_senha) => {
         if (response.status === 200) {
             const data = response.data;
             if (data && data.status === 'success') {
-                return { success: true, message: data.message || 'Senha resetada com sucesso!' };
+                return {
+                    success: true,
+                    message: data.message || 'Senha resetada com sucesso!'
+                };
             } else {
                 // API retornou 200, mas com status 'error' ou sem 'status'
-                return { success: false, message: data.message || 'Erro ao resetar senha na API externa.' };
+                return {
+                    success: false,
+                    message: data.message || 'Erro ao resetar senha na API externa.'
+                };
             }
         } else {
             console.warn(`API externa de reset de senha retornou status ${response.status} para CPF ${cpf}.`);
             if (response.status === 401) {
-                return { success: false, message: 'Não autorizado pela API.' };
+                return {
+                    success: false,
+                    message: 'Não autorizado pela API.'
+                };
             } else {
-                return { success: false, message: 'CPF não encontrado.' }; // Padrão baseado no seu Laravel
+                return {
+                    success: false,
+                    message: 'CPF não encontrado.'
+                }; // Padrão baseado no seu Laravel
             }
         }
     } catch (error) {
         if (error.response) {
             console.error('Erro de resposta da API externa de reset de senha:', error.response.status, error.response.data);
             if (error.response.status === 401) {
-                return { success: false, message: 'Não autorizado pela API.' };
+                return {
+                    success: false,
+                    message: 'Não autorizado pela API.'
+                };
             } else {
-                return { success: false, message: error.response.data.message || 'CPF não encontrado.' };
+                return {
+                    success: false,
+                    message: error.response.data.message || 'CPF não encontrado.'
+                };
             }
         } else if (error.request) {
             console.error('Nenhuma resposta recebida da API externa de reset de senha:', error.request);
-            return { success: false, message: 'Não foi possível conectar à API de reset de senha. Verifique sua conexão.' };
+            return {
+                success: false,
+                message: 'Não foi possível conectar à API de reset de senha. Verifique sua conexão.'
+            };
         } else {
             console.error('Erro ao configurar requisição para API externa de reset de senha:', error.message);
-            return { success: false, message: 'Erro interno ao processar requisição de reset de senha.' };
+            return {
+                success: false,
+                message: 'Erro interno ao processar requisição de reset de senha.'
+            };
         }
     }
 };
 // --- Fim da função da API externa de resetar senha ---
 
+const loginSucedido = async (req, res, nome, matricula) => {
+    // Checa se o usuário existe na tabela 'scores'
+    let userInScores = await findUserByMatricula(matricula); // Usa matricula
+
+    if (!userInScores) {
+        // Se não existir, insere na tabela 'scores' com score null
+        await insertNewUser(matricula, nome); // Usa matricula
+        console.log(`Novo usuário inserido na tabela scores: ${matricula} - ${nome}`);
+    } else {
+        console.log(`Usuário ${matricula} já existe na tabela scores.`);
+        // Opcional: Atualizar o nome se a API externa tiver um nome mais recente
+        // await db.run('UPDATE scores SET nome = ? WHERE matricula = ?', [nome, matricula]);
+    }
+
+    // Define a sessão do usuário
+    req.session.matricula = matricula; // Usa matricula
+    req.session.nome = nome; // Salva o nome também na sessão
+};
+
 // Rota de Login
 app.post('/api/login', async (req, res) => {
-    const { matricula, senha } = req.body;
+    const {
+        matricula,
+        senha
+    } = req.body;
 
     if (!matricula || !senha) {
-        return res.status(400).json({ message: 'Matrícula e senha são obrigatórias.' });
+        return res.status(400).json({
+            message: 'Matrícula e senha são obrigatórias.'
+        });
     }
 
     try {
@@ -145,51 +224,60 @@ app.post('/api/login', async (req, res) => {
         const authResult = await callExternalAuthApi(matricula, senha); // Usa a função auxiliar
 
         if (authResult.success) {
-            const nomeDoUsuario = authResult.nome; // Nome retornado pela API externa
-            const matriculaDoUsuario = authResult.matricula; // Matricula garantida pela API externa
+            await loginSucedido(req, res, authResult.nome, authResult.matricula);
 
-            // Checa se o usuário existe na tabela 'scores'
-            let userInScores = await findUserByMatricula(matriculaDoUsuario); // Usa matriculaDoUsuario
-
-            if (!userInScores) {
-                // Se não existir, insere na tabela 'scores' com score null
-                await insertNewUser(matriculaDoUsuario, nomeDoUsuario); // Usa matriculaDoUsuario
-                console.log(`Novo usuário inserido na tabela scores: ${matriculaDoUsuario} - ${nomeDoUsuario}`);
-            } else {
-                console.log(`Usuário ${matriculaDoUsuario} já existe na tabela scores.`);
-                // Opcional: Atualizar o nome se a API externa tiver um nome mais recente
-                // await db.run('UPDATE scores SET nome = ? WHERE matricula = ?', [nomeDoUsuario, matriculaDoUsuario]);
-            }
-
-            // Define a sessão do usuário
-            req.session.matricula = matriculaDoUsuario; // Usa matriculaDoUsuario
-            req.session.nome = nomeDoUsuario; // Salva o nome também na sessão
-
-            return res.status(200).json({ message: 'Login bem-sucedido!', matricula: matriculaDoUsuario, nome: nomeDoUsuario });
+            return res.status(200).json({
+                message: 'Login bem-sucedido!',
+                matricula: authResult.matricula,
+                nome: authResult.nome
+            });
         } else {
-            return res.status(401).json({ message: authResult.message || 'Credenciais inválidas.' });
+            return res.status(401).json({
+                message: authResult.message || 'Credenciais inválidas.'
+            });
         }
     } catch (error) {
         console.error('Erro no login:', error.message);
-        return res.status(500).json({ message: 'Erro interno do servidor durante o login.' });
+        return res.status(500).json({
+            message: 'Erro interno do servidor durante o login.'
+        });
     }
 });
 
 // Rota de Resetar Senha
 app.post('/api/reset-password', async (req, res) => {
-    const { matricula, cpf, nova_senha } = req.body; // Adicionado matricula aqui, embora seu PHP só use CPF.
-                                                    // No frontend Blade, você tem um campo de matrícula para "Criar Senha".
-                                                    // Se a API externa não usa matrícula para resetar, você pode ignorá-la aqui.
+    const {
+        matricula,
+        cpf,
+        nova_senha
+    } = req.body;
 
     if (!cpf || !nova_senha) {
-        return res.status(400).json({ message: 'CPF e nova senha são obrigatórios.' });
+        return res.status(400).json({
+            message: 'CPF e nova senha são obrigatórios.'
+        });
     }
 
     try {
         const resetResult = await callExternalResetPasswordApi(cpf, nova_senha); // Usa a função auxiliar
-
+        
         if (resetResult.success) {
-            return res.status(200).json({ message: resetResult.message });
+            const authResult = await callExternalAuthApi(matricula, nova_senha); // Usa a função auxiliar
+
+            if (authResult.success) {
+                await loginSucedido(req, res, authResult.nome, authResult.matricula);
+
+                return res.status(200).json({
+                    message: 'Reset bem-sucedido!',
+                    matricula: matricula,
+                    nome: resetResult.nome
+                });
+            } else {
+                return res.status(200).json({
+                    message: 'Senha resetada, faça login novamente.'
+                });
+            }
+
         } else {
             // Adaptando a mensagem de erro do Laravel
             let statusCode = 400; // Padrão para Bad Request
@@ -198,11 +286,15 @@ app.post('/api/reset-password', async (req, res) => {
             } else if (resetResult.message === 'CPF não encontrado.') {
                 statusCode = 404; // Not Found, se você quiser ser mais específico
             }
-            return res.status(statusCode).json({ message: resetResult.message });
+            return res.status(statusCode).json({
+                message: resetResult.message
+            });
         }
     } catch (error) {
         console.error('Erro inesperado no fluxo de reset de senha:', error.message);
-        return res.status(500).json({ message: 'Erro interno do servidor durante o reset de senha.' });
+        return res.status(500).json({
+            message: 'Erro interno do servidor durante o reset de senha.'
+        });
     }
 });
 
@@ -212,10 +304,14 @@ app.post('/api/logout', (req, res) => {
     req.session.destroy(err => {
         if (err) {
             console.error('Erro ao destruir sessão:', err);
-            return res.status(500).json({ message: 'Erro ao fazer logout.' });
+            return res.status(500).json({
+                message: 'Erro ao fazer logout.'
+            });
         }
         res.clearCookie('connect.sid'); // Limpa o cookie da sessão
-        res.status(200).json({ message: 'Logout bem-sucedido.' });
+        res.status(200).json({
+            message: 'Logout bem-sucedido.'
+        });
     });
 });
 
@@ -228,7 +324,9 @@ function isAuthenticated(req, res, next) {
         // Usuário não autenticado
         // Para requisições de API, retorna um erro 401
         if (req.xhr || req.headers.accept.indexOf('json') > -1) { // Verifica se é uma requisição AJAX/API
-            res.status(401).json({ message: 'Não autorizado. Por favor, faça login.' });
+            res.status(401).json({
+                message: 'Não autorizado. Por favor, faça login.'
+            });
         } else {
             // Para requisições de página (navegador), redireciona para a tela de login
             res.redirect('/login.html');
@@ -241,33 +339,46 @@ app.post('/api/scores', isAuthenticated, async (req, res) => {
     // A matrícula agora vem da sessão do usuário logado, não do corpo da requisição
     const matricula = req.session.matricula;
     const nome = req.session.nome; // O nome também pode vir da sessão
-    const { score } = req.body;
+    const {
+        score
+    } = req.body;
 
     // A validação da matrícula já foi feita no login
     // Validação do score
     if (typeof score === 'undefined' || score === null) { // Score pode ser null, mas se enviado, deve ser um número
-         // Se você quiser permitir score completamente opcional na inserção inicial, remova esta validação.
-         // Aqui, assumimos que score é enviado no POST para uma nova pontuação.
-        return res.status(400).json({ error: 'Score é obrigatório para salvar a pontuação.' });
+        // Se você quiser permitir score completamente opcional na inserção inicial, remova esta validação.
+        // Aqui, assumimos que score é enviado no POST para uma nova pontuação.
+        return res.status(400).json({
+            error: 'Score é obrigatório para salvar a pontuação.'
+        });
     }
     if (isNaN(score)) {
-        return res.status(400).json({ error: 'Score deve ser um número válido.' });
+        return res.status(400).json({
+            error: 'Score deve ser um número válido.'
+        });
     }
 
 
     try {
         const stmt = db.prepare('INSERT INTO scores (matricula, nome, score) VALUES (?, ?, ?)');
-        stmt.run(matricula, nome, score, function(err) {
+        stmt.run(matricula, nome, score, function (err) {
             if (err) {
                 console.error('Erro ao salvar pontuação:', err.message);
-                return res.status(500).json({ error: err.message });
+                return res.status(500).json({
+                    error: err.message
+                });
             }
-            res.status(201).json({ message: 'Pontuação salva com sucesso!', id: this.lastID });
+            res.status(201).json({
+                message: 'Pontuação salva com sucesso!',
+                id: this.lastID
+            });
         });
         stmt.finalize();
     } catch (error) {
         console.error('Erro ao salvar pontuação (try/catch):', error.message);
-        res.status(500).json({ error: 'Erro interno ao salvar pontuação.' });
+        res.status(500).json({
+            error: 'Erro interno ao salvar pontuação.'
+        });
     }
 });
 
@@ -276,7 +387,9 @@ app.get('/api/scores', isAuthenticated, (req, res) => {
     db.all('SELECT nome, matricula, score, timestamp FROM scores ORDER BY score DESC LIMIT 10', [], (err, rows) => {
         if (err) {
             console.error('Erro ao obter pontuações:', err.message);
-            return res.status(500).json({ error: err.message });
+            return res.status(500).json({
+                error: err.message
+            });
         }
         res.json(rows);
     });
@@ -285,9 +398,15 @@ app.get('/api/scores', isAuthenticated, (req, res) => {
 // Endpoint para verificar o status do login (útil para o frontend)
 app.get('/api/status', (req, res) => {
     if (req.session && req.session.matricula) {
-        res.json({ loggedIn: true, matricula: req.session.matricula, nome: req.session.nome });
+        res.json({
+            loggedIn: true,
+            matricula: req.session.matricula,
+            nome: req.session.nome
+        });
     } else {
-        res.json({ loggedIn: false });
+        res.json({
+            loggedIn: false
+        });
     }
 });
 

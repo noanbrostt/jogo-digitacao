@@ -108,10 +108,12 @@ header {
 
         svg {
             transition: .3s ease;
-            cursor: pointer;
+            cursor: pointer;    
+            color: #434242;
 
             &:hover {
                 scale: 1.1;
+                color: #da3030;
             }
         }
     }

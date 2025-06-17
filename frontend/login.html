@@ -655,7 +655,6 @@
                             });
                         },
                         success: function (response) {
-                            // Redireciona normalmente
                             window.location.href = "/";
                         },
                         error: function (error) {
@@ -706,13 +705,14 @@
                 if (valido) {
                     // ✅ Dados válidos - pode enviar via AJAX
                     $.ajax({
-                        url: "/api/register-password",
+                        url: "/api/reset-password",
                         type: "POST",
-                        data: {
+                        contentType: 'application/json',
+                        data: JSON.stringify({
                             matricula: matricula.val().trim(),
                             cpf: cpf.val().replace(/\D/g, '').trim(),
                             nova_senha: senha.val().trim(),
-                        },
+                        }),
                         beforeSend: function () {
                             Swal.fire({
                                 title: 'Aguarde...',
@@ -724,13 +724,15 @@
                             });
                         },
                         success: function (response) {
-                            // Redireciona para a página de inscrição
-                            window.location.href = response.redirect;
+                            if (response.message == 'Senha resetada, faça login novamente.') {
+                                localStorage.setItem('flash_message', response.message);
+                            }
+                            window.location.href = "/";
                         },
                         error: function (error) {
                             Swal.close();
 
-                            var erro = error.responseJSON.error;
+                            var erro = error.responseJSON.message;
 
                             if (erro == 'CPF não encontrado.') {
                                 cpf.addClass("input-error");
@@ -771,6 +773,16 @@
         });
     </script>
 
+    <script>
+        const msg = localStorage.getItem('flash_message');
+        if (msg) {
+            Toast.fire({
+                icon: "success",
+                title: msg,
+            });
+            localStorage.removeItem('flash_message'); // limpa após exibir
+        }
+    </script>
 </body>
 
 </html>

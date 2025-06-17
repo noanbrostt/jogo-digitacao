@@ -4,7 +4,6 @@ const session = require('express-session'); // Para gerenciar sessões
 const axios = require('axios'); // Para fazer requisições à API externa
 const {
     db,
-    findUserByMatricula,
     insertNewUser
 } = require('./database'); // Importa o db e as novas funções
 const path = require('path');
@@ -188,33 +187,37 @@ const callExternalResetPasswordApi = async (cpf, nova_senha) => {
 // --- Fim da função da API externa de resetar senha ---
 
 const loginSucedido = async (req, res, nome, matricula) => {
+
+    const getUserScore = () => {
+        return new Promise((resolve, reject) => {
+            db.get('SELECT score FROM scores WHERE matricula = ?', [matricula], (err, row) => {
+                if (err) {
+                    console.error('Erro ao obter pontuação ao fazer loginSucedido:', err.message);
+                    return reject(err);
+                }
+                resolve(row);
+            });
+        });
+    };
+
     // Checa se o usuário existe na tabela 'scores'
-    let userInScores = await findUserByMatricula(matricula); // Usa matricula
-    let score;
+    let userInScores = await getUserScore(); // Usa matricula
+    let currentTotalScore = 0;
 
     if (!userInScores) {
         // Se não existir, insere na tabela 'scores' com score 0
-        await insertNewUser(matricula, nome); // Usa matricula
+        await insertNewUser(matricula, nome); // Assumindo insertNewUser insere com score inicial 0
         console.log(`Novo usuário inserido na tabela scores: ${matricula} - ${nome}`);
-        score = 0;
 
     } else {
-        db.get('SELECT score FROM scores WHERE matricula = ?', [matricula], (err, row) => {
-            if (err) {
-                console.error('Erro ao obter pontuação:', err.message);
-                return res.status(500).json({ error: err.message });
-            }
-
-            score = row ? row.score : 0;
-        });
-
-        console.log(`Usuário ${matricula} já existe e possui score ${score}.`);
+        currentTotalScore = userInScores.score || 0; // Obtém o score existente, padrão para 0
+        console.log(`Usuário ${matricula} já existe e possui score ${currentTotalScore}.`);
     }
 
     // Define a sessão do usuário
     req.session.matricula = matricula;
     req.session.nome = nome;
-    req.session.score = score ?? 0;
+    req.session.score = currentTotalScore;
 };
 
 // Rota de Login
@@ -354,6 +357,8 @@ app.post('/api/scores', isAuthenticated, async (req, res) => {
         score
     } = req.body;
 
+    console.log(score);
+    
     // Validação do score
     if (isNaN(score)) {
         return res.status(400).json({
@@ -368,12 +373,17 @@ app.post('/api/scores', isAuthenticated, async (req, res) => {
     try {
         db.run('UPDATE scores SET score = ? WHERE matricula = ?', [score, matricula], function(err) {
             if (err) {
-                console.error('Erro ao atualizar score:', err.message);
-                // trata erro
+                res.status(500).json({
+                    error: 'Erro interno ao salvar pontuação.'
+                });
                 return;
             }
             req.session.score = score;
             console.log(`Score atualizado para ${score} na matrícula ${matricula}`);
+        });
+
+        return res.status(200).json({
+            message: 'Score salvo!'
         });
 
     } catch (error) {

@@ -284,7 +284,12 @@ function endGame() {
     const faseAtual = fases[currentFase];
     let finalScore = 0;
 
-    desbloquearFases();
+    if (currentFase === 4) {
+        finalScore+= score;
+    } else {
+        finalScore =
+            score >= faseAtual.letras.length ? faseAtual.pontos : 0;
+    }
 
     switch (currentFase) {
         case 2:
@@ -298,12 +303,6 @@ function endGame() {
             break;
     }
 
-    if (currentFase === 4) {
-        finalScore+= score;
-    } else {
-        finalScore =
-            score >= faseAtual.letras.length ? faseAtual.pontos : 0;
-    }
     highlightKey(""); // Chama a função para destacar a tecla correspondente
     highlightFingerByKey(""); // Chama a função para destacar o dedo correspondente
 
@@ -312,7 +311,7 @@ function endGame() {
         "Parabéns! Você completou a fase!" :
         "Tempo esgotado!"
     );
-
+    
     // Atualiza o progresso apenas se a pontuação for maior que a anterior
     if (finalScore > localStorage.getItem('userScore')) {
         salvarProgresso(finalScore);
@@ -502,10 +501,5 @@ document.addEventListener("keydown", (e) => {
 });
 
 function resetarProgresso() {
-    if (
-        confirm("Tem certeza que deseja apagar todo o progresso?")
-    ) {
-        localStorage.removeItem("progresso");
-        location.reload();
-    }
+
 }

@@ -3,7 +3,6 @@
 // Função para verificar o status do login no backend
 async function checkLoginStatus() {
     $('body').hide();
-    // Swal.showLoading();
 
     try {
         const response = await fetch('/api/status'); // Chama o endpoint de status do backend
@@ -50,7 +49,7 @@ async function checkLoginStatus() {
         }
         
         $('body').show();
-        // Swal.close();
+
     } catch (error) {
         console.error('Erro ao verificar status de login:', error);
         // Em caso de erro na requisição (servidor fora do ar, etc.), redirecionar para login

@@ -181,9 +181,21 @@ function startGame(fase) {
     wordElement.classList.add("hidden");
     inputElement.classList.add("hidden");
 
-    const savedProgress =
-        JSON.parse(localStorage.getItem("progresso")) || {};
-    const pontuacaoAtual = savedProgress[fase] || 0;
+    const userScore = localStorage.getItem('userScore');
+    switch (fase) {
+        case 1:
+            pontuacaoAtual = userScore >= 50 ? 50 : 0;
+            break;
+        case 2:
+            pontuacaoAtual = userScore >= 150 ? 100 : 0;
+            break;
+        case 3:
+            pontuacaoAtual = userScore >= 300 ? 150 : 0;
+            break;
+        case 4:
+            pontuacaoAtual = userScore >= 300 ? (userScore - 300) : 0;
+            break;
+    }
 
     scoreElement.textContent = "Pontuação: " + pontuacaoAtual;
     scoreElement.classList.remove("hidden");
@@ -270,10 +282,24 @@ function getNextLetterToHighlight() {
 
 function endGame() {
     const faseAtual = fases[currentFase];
-    let finalScore;
+    let finalScore = 0;
+
+    desbloquearFases();
+
+    switch (currentFase) {
+        case 2:
+            finalScore+= 50;
+            break;
+        case 3:
+            finalScore+= 150;
+            break;
+        case 4:
+            finalScore+= 300;
+            break;
+    }
 
     if (currentFase === 4) {
-        finalScore = score;
+        finalScore+= score;
     } else {
         finalScore =
             score >= faseAtual.letras.length ? faseAtual.pontos : 0;
@@ -282,26 +308,18 @@ function endGame() {
     highlightFingerByKey(""); // Chama a função para destacar o dedo correspondente
 
     alert(
-        finalScore > 0 ?
+        score > 0 ?
         "Parabéns! Você completou a fase!" :
         "Tempo esgotado!"
     );
 
     // Atualiza o progresso apenas se a pontuação for maior que a anterior
-    if (finalScore > progresso[currentFase]) {
-        progresso[currentFase] = finalScore;
-        salvarProgresso(currentFase, finalScore);
+    if (finalScore > localStorage.getItem('userScore')) {
+        salvarProgresso(finalScore);
     }
 
     // Desbloquear próxima fase se não for a última
-    if (finalScore > 0) {
-        if (currentFase === 1)
-            document.getElementById("btnFase2").disabled = false;
-        if (currentFase === 2)
-            document.getElementById("btnFase3").disabled = false;
-        if (currentFase === 3)
-            document.getElementById("btnFase4").disabled = false;
-    }
+    desbloquearFases(finalScore);
 
     returnToMenu();
 }
@@ -415,36 +433,46 @@ function shuffleArray(array) {
     return copy;
 }
 
-const progressoSalvo =
-    JSON.parse(localStorage.getItem("progresso")) || {};
-const progresso = {
-    1: progressoSalvo[1] || 0,
-    2: progressoSalvo[2] || 0,
-    3: progressoSalvo[3] || 0,
-    4: progressoSalvo[4] || 0,
-};
+const scoreFases = [
+    { score: 300, ids: ["btnFase2", "btnFase3", "btnFase4"] },
+    { score: 150, ids: ["btnFase2", "btnFase3"] },
+    { score: 50,  ids: ["btnFase2"] },
+    { score: 0,  ids: [] }
+];
 
-function salvarProgresso(fase, pontuacao) {
-    progresso[fase] = Math.max(progresso[fase] || 0, pontuacao);
-    localStorage.setItem("progresso", JSON.stringify(progresso));
-}
-
-function verificarProgressoSalvo() {
-    const progressoSalvo =
-        JSON.parse(localStorage.getItem("progresso")) || {};
-
-    if (progressoSalvo[1] > 0) {
-        document.getElementById("btnFase2").disabled = false;
-    }
-    if (progressoSalvo[2] > 0) {
-        document.getElementById("btnFase3").disabled = false;
-    }
-    if (progressoSalvo[3] > 0) {
-        document.getElementById("btnFase4").disabled = false;
+function desbloquearFases(score) {
+    for (const fase of scoreFases) {
+        if (score >= fase.score) {
+            fase.ids.forEach(id => {
+                document.getElementById(id).disabled = false;
+            });
+            break; // achou o maior nível possível, para aqui
+        }
     }
 }
 
-verificarProgressoSalvo();
+function salvarProgresso(pontuacao) {
+    
+    fetch('/api/scores', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ score: pontuacao })
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Erro ao salvar score');
+        return response.json();
+    })
+    .then(data => {
+        // sucesso
+        localStorage.setItem('userScore', pontuacao);
+    })
+    .catch(error => {
+        // erro
+        console.log('Erro ao salvar pontuação');
+    });
+}
 
 function showRanking() {
     alert("Ranking ainda não implementado.");

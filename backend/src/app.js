@@ -190,20 +190,31 @@ const callExternalResetPasswordApi = async (cpf, nova_senha) => {
 const loginSucedido = async (req, res, nome, matricula) => {
     // Checa se o usuário existe na tabela 'scores'
     let userInScores = await findUserByMatricula(matricula); // Usa matricula
+    let score;
 
     if (!userInScores) {
-        // Se não existir, insere na tabela 'scores' com score null
+        // Se não existir, insere na tabela 'scores' com score 0
         await insertNewUser(matricula, nome); // Usa matricula
         console.log(`Novo usuário inserido na tabela scores: ${matricula} - ${nome}`);
+        score = 0;
+
     } else {
-        console.log(`Usuário ${matricula} já existe na tabela scores.`);
-        // Opcional: Atualizar o nome se a API externa tiver um nome mais recente
-        // await db.run('UPDATE scores SET nome = ? WHERE matricula = ?', [nome, matricula]);
+        db.get('SELECT score FROM scores WHERE matricula = ?', [matricula], (err, row) => {
+            if (err) {
+                console.error('Erro ao obter pontuação:', err.message);
+                return res.status(500).json({ error: err.message });
+            }
+
+            score = row ? row.score : 0;
+        });
+
+        console.log(`Usuário ${matricula} já existe e possui score ${score}.`);
     }
 
     // Define a sessão do usuário
-    req.session.matricula = matricula; // Usa matricula
-    req.session.nome = nome; // Salva o nome também na sessão
+    req.session.matricula = matricula;
+    req.session.nome = nome;
+    req.session.score = score ?? 0;
 };
 
 // Rota de Login
@@ -338,42 +349,33 @@ function isAuthenticated(req, res, next) {
 app.post('/api/scores', isAuthenticated, async (req, res) => {
     // A matrícula agora vem da sessão do usuário logado, não do corpo da requisição
     const matricula = req.session.matricula;
-    const nome = req.session.nome; // O nome também pode vir da sessão
+    const oldScore = req.session.score;
     const {
         score
     } = req.body;
 
-    // A validação da matrícula já foi feita no login
     // Validação do score
-    if (typeof score === 'undefined' || score === null) { // Score pode ser null, mas se enviado, deve ser um número
-        // Se você quiser permitir score completamente opcional na inserção inicial, remova esta validação.
-        // Aqui, assumimos que score é enviado no POST para uma nova pontuação.
-        return res.status(400).json({
-            error: 'Score é obrigatório para salvar a pontuação.'
-        });
-    }
     if (isNaN(score)) {
         return res.status(400).json({
             error: 'Score deve ser um número válido.'
         });
     }
 
+    if (oldScore >= score) {
+        return;
+    }
 
     try {
-        const stmt = db.prepare('INSERT INTO scores (matricula, nome, score) VALUES (?, ?, ?)');
-        stmt.run(matricula, nome, score, function (err) {
+        db.run('UPDATE scores SET score = ? WHERE matricula = ?', [score, matricula], function(err) {
             if (err) {
-                console.error('Erro ao salvar pontuação:', err.message);
-                return res.status(500).json({
-                    error: err.message
-                });
+                console.error('Erro ao atualizar score:', err.message);
+                // trata erro
+                return;
             }
-            res.status(201).json({
-                message: 'Pontuação salva com sucesso!',
-                id: this.lastID
-            });
+            req.session.score = score;
+            console.log(`Score atualizado para ${score} na matrícula ${matricula}`);
         });
-        stmt.finalize();
+
     } catch (error) {
         console.error('Erro ao salvar pontuação (try/catch):', error.message);
         res.status(500).json({
@@ -401,7 +403,8 @@ app.get('/api/status', (req, res) => {
         res.json({
             loggedIn: true,
             matricula: req.session.matricula,
-            nome: req.session.nome
+            nome: req.session.nome,
+            score: req.session.score
         });
     } else {
         res.json({

@@ -27,7 +27,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             matricula TEXT UNIQUE, -- Matricula agora é UNIQUE para evitar duplicatas
             nome TEXT NOT NULL,
-            score INTEGER NULL,
+            score INTEGER NOT NULL,
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
         )`, (err) => {
             if (err) {
@@ -55,11 +55,11 @@ function findUserByMatricula(matricula) {
 // Função para inserir um novo usuário
 function insertNewUser(matricula, nome) {
     return new Promise((resolve, reject) => {
-        db.run('INSERT INTO scores (matricula, nome, score) VALUES (?, ?, NULL)', [matricula, nome], function(err) {
+        db.run('INSERT INTO scores (matricula, nome, score) VALUES (?, ?, 0)', [matricula, nome], function(err) {
             if (err) {
                 reject(err);
             } else {
-                resolve({ id: this.lastID, matricula, nome, score: null }); // Retorna o novo usuário
+                resolve({ id: this.lastID, matricula, nome, score: 0 }); // Retorna o novo usuário
             }
         });
     });

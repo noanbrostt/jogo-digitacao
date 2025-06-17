@@ -14,7 +14,7 @@ async function checkLoginStatus() {
             window.location.href = '/login.html';
         } else {
             // Se estiver logado, você pode atualizar a UI com as informações do usuário
-            console.log(`Usuário logado: ${data.nome} (${data.matricula})`);
+            console.log(`Usuário logado: ${data.matricula} - ${data.nome}, score ${data.score}`);
             // Exemplo: Atualizar um elemento na página principal
 
             let nomes = data.nome.split(" ");
@@ -26,9 +26,27 @@ async function checkLoginStatus() {
             if (userInfoElement) {
                 userInfoElement.textContent = `Olá, ${nomeFormatado}`;
             }
+
+            const fases = [
+                { score: 300, ids: ["btnFase2", "btnFase3", "btnFase4"] },
+                { score: 150, ids: ["btnFase2", "btnFase3"] },
+                { score: 50,  ids: ["btnFase2"] },
+                { score: 0,  ids: [] }
+            ];
+
+            for (const fase of fases) {
+                if (data.score >= fase.score) {
+                    fase.ids.forEach(id => {
+                        document.getElementById(id).disabled = false;
+                    });
+                    break; // achou o maior nível possível, para aqui
+                }
+            }
+
             // Opcional: Salvar no localStorage também para consistência, embora a sessão seja o principal
             localStorage.setItem('userMatricula', data.matricula);
             localStorage.setItem('userName', data.nome);
+            localStorage.setItem('userScore', data.score);
         }
         
         $('body').show();

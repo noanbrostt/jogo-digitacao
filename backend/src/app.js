@@ -407,6 +407,51 @@ app.get('/api/scores', isAuthenticated, (req, res) => {
     });
 });
 
+app.get('/api/leaderboard', (req, res) => {
+    const minhaMatricula = req.session.matricula;
+
+    if (!minhaMatricula) return res.status(401).json({ error: 'Não autenticado' });
+
+    const queryTop10 = `
+        SELECT matricula, nome, score, timestamp
+        FROM scores
+        ORDER BY score DESC, timestamp ASC
+        LIMIT 10
+    `;
+
+    const queryUsuario = `
+        SELECT
+            matricula,
+            nome,
+            score,
+            timestamp,
+            (
+                SELECT COUNT(*) + 1
+                FROM scores s2
+                WHERE s2.score > s1.score
+                OR (s2.score = s1.score AND s2.timestamp < s1.timestamp)
+            ) AS posicao
+        FROM scores s1
+        WHERE matricula = ?
+    `;
+
+    db.all(queryTop10, [], (err, top10) => {
+        if (err) return res.status(500).json({ error: err.message });
+
+        db.get(queryUsuario, [minhaMatricula], (err, usuario) => {
+            if (err) return res.status(500).json({ error: err.message });
+
+            const jaNoTop10 = top10.some(entry => entry.matricula === minhaMatricula);
+
+            res.json({
+                top10,
+                minhaMatricula,
+                usuario: jaNoTop10 ? null : usuario
+            });
+        });
+    });
+});
+
 // Endpoint para verificar o status do login (útil para o frontend)
 app.get('/api/status', (req, res) => {
     if (req.session && req.session.matricula) {

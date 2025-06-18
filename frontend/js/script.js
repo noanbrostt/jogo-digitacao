@@ -285,7 +285,7 @@ function endGame() {
     let finalScore = 0;
 
     if (currentFase === 4) {
-        finalScore+= score;
+        finalScore += score;
     } else {
         finalScore =
             score >= faseAtual.letras.length ? faseAtual.pontos : 0;
@@ -293,13 +293,13 @@ function endGame() {
 
     switch (currentFase) {
         case 2:
-            finalScore+= 50;
+            finalScore += 50;
             break;
         case 3:
-            finalScore+= 150;
+            finalScore += 150;
             break;
         case 4:
-            finalScore+= 300;
+            finalScore += 300;
             break;
     }
 
@@ -311,7 +311,7 @@ function endGame() {
         "Parabéns! Você completou a fase!" :
         "Tempo esgotado!"
     );
-    
+
     // Atualiza o progresso apenas se a pontuação for maior que a anterior
     if (finalScore > localStorage.getItem('userScore')) {
         salvarProgresso(finalScore);
@@ -432,11 +432,22 @@ function shuffleArray(array) {
     return copy;
 }
 
-const scoreFases = [
-    { score: 300, ids: ["btnFase2", "btnFase3", "btnFase4"] },
-    { score: 150, ids: ["btnFase2", "btnFase3"] },
-    { score: 50,  ids: ["btnFase2"] },
-    { score: 0,  ids: [] }
+const scoreFases = [{
+        score: 300,
+        ids: ["btnFase2", "btnFase3", "btnFase4"]
+    },
+    {
+        score: 150,
+        ids: ["btnFase2", "btnFase3"]
+    },
+    {
+        score: 50,
+        ids: ["btnFase2"]
+    },
+    {
+        score: 0,
+        ids: []
+    }
 ];
 
 function desbloquearFases(score) {
@@ -451,26 +462,28 @@ function desbloquearFases(score) {
 }
 
 function salvarProgresso(pontuacao) {
-    
+
     fetch('/api/scores', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ score: pontuacao })
-    })
-    .then(response => {
-        if (!response.ok) throw new Error('Erro ao salvar score');
-        return response.json();
-    })
-    .then(data => {
-        // sucesso
-        localStorage.setItem('userScore', pontuacao);
-    })
-    .catch(error => {
-        // erro
-        console.log('Erro ao salvar pontuação');
-    });
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                score: pontuacao
+            })
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Erro ao salvar score');
+            return response.json();
+        })
+        .then(data => {
+            // sucesso
+            localStorage.setItem('userScore', pontuacao);
+        })
+        .catch(error => {
+            // erro
+            console.log('Erro ao salvar pontuação');
+        });
 }
 
 function showRanking() {
@@ -500,6 +513,81 @@ document.addEventListener("keydown", (e) => {
     }
 });
 
-function resetarProgresso() {
+function abrirModalRanking() {
+    $('#leaderboardModal').modal('show');
+}
 
+function carregarLeaderboard() {
+    fetch("/api/leaderboard")
+        .then(res => res.json())
+        .then(data => {
+            const tbody = document.getElementById("leaderboardBody");
+            tbody.innerHTML = "";
+
+            data.top10.forEach((user, index) => {
+                const isCurrent = user.matricula === data.minhaMatricula;
+                const row = document.createElement("tr");
+                if (isCurrent) row.classList.add("table-warning");
+
+                let posicao;
+
+                switch (index) {
+                    case 0:
+                        posicao = "🥇";
+                        break;
+                    case 1:
+                        posicao = "🥈";
+                        break;
+                    case 2:
+                        posicao = "🥉";
+                        break;
+                    default:
+                        posicao = index + 1;
+                }
+
+                row.innerHTML = `
+                    <td data-sort="${index + 1}">${posicao}</td>
+                    <td>${user.matricula}</td>
+                    <td>${user.nome}</td>
+                    <td>${user.score}</td>
+                    <td data-sort="${user.timestamp}">${formatDate(user.timestamp)}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            if (!data.top10.some(u => u.matricula === data.minhaMatricula)) {
+                const eu = data.usuario;
+                const tr = document.querySelector("#userPosition tr");
+                tr.classList.add('destaque');
+
+                tr.innerHTML = `
+                    <td>${eu.posicao}</td>
+                    <td>${eu.matricula}</td>
+                    <td>${eu.nome}</td>
+                    <td>${eu.score}</td>
+                    <td>${formatDate(eu.timestamp)}</td>
+                `;
+            }
+
+            $('#leaderboardTable').DataTable({
+                paging: false,
+                searching: false,
+                info: false,
+                ordering: true,
+                autoWidth: false,
+                language: {
+                    zeroRecords: "Nenhum resultado encontrado",
+                    emptyTable: "Sem dados disponíveis"
+                },
+                order: [[0, "asc"]]
+            });
+        });
+}
+
+function formatDate(dateString) {
+  const d = new Date(dateString);
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
 }

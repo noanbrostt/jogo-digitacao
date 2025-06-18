@@ -4,14 +4,14 @@
     --grey: #f0f0f0
 }
 
-:root {
+/* :root {
     --bg-blue: #F9286D;
     --bg-blue-light: #FA3B62;
     --bg-orange: #FC654B;
     --bg-orange-dark: #ca462f;
     --contrast-primary: #424242;
     --contrast-secondary: #ffffff;
-}
+} */
 
 * {
     margin: 0;
@@ -67,7 +67,7 @@ input {
     border: 1px solid #ddd;
 }
 
-header {
+body > header {
     position: fixed;
     top: 0;
     width: 100%;
@@ -104,6 +104,7 @@ header {
         #nome_usuario {
             font-size: 22px;
             color: var(--clr-primary);
+            margin-bottom: 0;
         }
 
         svg {
@@ -133,7 +134,8 @@ header {
     gap: 5px;
 
     h1 {
-        margin-bottom: 26px;
+        margin-bottom: 32px;
+        font-size: 32px;
     }
 
     button {
@@ -155,9 +157,10 @@ header {
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 
-    #message {
-        margin-bottom: 20px;
+    #score {
         font-family: unset;
+        margin-bottom: 0;
+        letter-spacing: 14px;
     }
 
     button {
@@ -166,7 +169,7 @@ header {
     }
 }
 
-#score,
+#message,
 #timer,
 #highscore {
     margin-top: 10px;
@@ -260,3 +263,114 @@ input:focus {
     scale: 0.55;
     margin-block: -95px;
 }
+
+.destaque,
+.destaque td {
+    background-color: #ffeaa7;
+    font-weight: bold;
+}
+
+.modal.show .modal-dialog {
+    max-width: 96%;
+    width: fit-content;
+    width: -moz-fit-content;
+}
+
+/* Modal visual clean */
+.modal-content {
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+    background: #0d6efd;
+    color: white;
+    padding: 1rem 1.5rem;
+}
+
+.modal-title {
+    font-weight: bold;
+    font-size: 1.4rem;
+}
+
+.btn-close {
+    filter: invert(1);
+}
+
+/* Estilo da tabela */
+#leaderboardTable {
+    width: 100% !important;
+    border-collapse: collapse;
+}
+
+#leaderboardTable thead {
+    background: #f0f2f5;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+}
+
+#leaderboardTable tbody {
+    border-bottom: 20px solid white;
+
+    & tr:last-child {
+        border-bottom: 1px solid black;
+    }
+}
+
+#leaderboardTable th,
+#leaderboardTable td {
+    text-align: center;
+    vertical-align: middle;
+    padding: 0.75rem;
+    padding-right: 26px;
+    font-size: 0.9rem;
+}
+
+#leaderboardTable tbody tr:nth-child(odd) {
+    background-color: #f9f9f9;
+}
+
+#leaderboardTable tbody tr:nth-child(even) {
+    background-color: #ffffff;
+}
+
+/* Destaques especiais */
+#leaderboardTable tbody tr:first-child {
+    background: gold !important;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+#leaderboardTable tbody tr:nth-child(2) {
+    background: silver !important;
+    font-weight: bold;
+}
+
+#leaderboardTable tbody tr:nth-child(3) {
+    background: #cd7f32 !important; /* bronze */
+    font-weight: bold;
+}
+
+#leaderboardTable tbody tr:first-child td:first-child {
+    font-size: 1.2rem;
+}
+#leaderboardTable tbody tr:nth-child(2) td:first-child,
+#leaderboardTable tbody tr:nth-child(3) td:first-child {
+    font-size: 1.1rem;
+}
+#leaderboardTable tbody td:nth-child(3) {
+    text-align: left;
+}
+
+#leaderboardTable tfoot {
+    position: sticky;
+    bottom: -16px;
+    
+    tr {
+        background-color: #fff8dc; /* tipo amarelinho claro */
+        font-weight: bold;
+    }
+}
+
